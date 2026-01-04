@@ -4,81 +4,124 @@ import com.google.gson.Gson;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
-import java.io.*;
-import java.net.Socket;
-import java.util.Scanner;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class ClientMain {
+    private static final String HOST = "127.0.0.1";
+    private static final int PORT = 8080;
+    private static final Gson gson = new Gson();
+    
+    // Canale NIO
+    private static SocketChannel clientChannel;
+
     public static void main(String[] args) {
-        String host = "127.0.0.1";
-        int port = 8080;
-        Gson gson = new Gson();
+        try {
+            // 1. Connessione NIO
+            clientChannel = SocketChannel.open();
+            clientChannel.connect(new InetSocketAddress(HOST, PORT));
 
-        // TRY-WITH-RESOURCES: 
-        // Tutto ciò che dichiariamo qui dentro verrà chiuso automaticamente alla fine.
-        // Abbiamo aggiunto 'scanner' alla lista.
-        try (Scanner scanner = new Scanner(System.in);
-             Socket socket = new Socket(host, port);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            System.out.println("--- CLIENT NIO CONNESSO ---");
+            System.out.println("Comandi: login, info, submit, exit");
 
-            System.out.println("--- CLIENT CONNESSO ---");
-            System.out.println("Comandi disponibili per test: login, info, submit, exit");
+            // 2. Avviamo il listener
+            new Thread(new ServerListener()).start();
 
-            while (true) {
-                System.out.print("\nInserisci comando > ");
-                // Verifica se c'è input prima di leggere per evitare errori
-                if (!scanner.hasNextLine()) break;
+            // 3. FIX: TRY-WITH-RESOURCES per lo Scanner
+            // Lo dichiariamo dentro le parentesi tonde del try.
+            // Java lo chiuderà automaticamente alla fine delle parentesi graffe.
+            try (Scanner scanner = new Scanner(System.in)) {
                 
-                String command = scanner.nextLine();
+                while (true) {
+                    System.out.print("> ");
+                    
+                    // Controllo se c'è una linea (evita eccezioni se fai CTRL+D o chiudi lo stream)
+                    if (!scanner.hasNextLine()) {
+                        break; 
+                    }
+                    
+                    String command = scanner.nextLine();
 
-                if ("exit".equalsIgnoreCase(command)) {
-                    System.out.println("Chiusura client...");
-                    break;
-                }
+                    if ("exit".equalsIgnoreCase(command)) {
+                        // Chiudiamo il canale ed usciamo dal loop
+                        // Lo scanner verrà chiuso automaticamente dal try
+                        clientChannel.close();
+                        break;
+                    }
 
-                // 1. Creazione della richiesta
-                ClientRequest req = new ClientRequest();
-                
-                if ("login".equalsIgnoreCase(command)) {
-                    req.operation = "login";
-                    req.username = "userTest";
-                    req.password = "pass123";
-                } 
-                else if ("info".equalsIgnoreCase(command)) {
-                    req.operation = "requestGameInfo";
-                }
-                else if ("submit".equalsIgnoreCase(command)) {
-                    req.operation = "submitProposal";
-                    req.words = Arrays.asList("CANE", "GATTO", "SOLE", "MARE");
-                }
-                else {
-                    req.operation = command;
-                }
+                    ClientRequest req = new ClientRequest();
 
-                // 2. Invio
-                String jsonRequest = gson.toJson(req);
-                out.println(jsonRequest);
+                    if ("login".equalsIgnoreCase(command)) {
+                        req.operation = "login";
+                        System.out.print("Username: ");
+                        req.username = scanner.nextLine(); // Chiediamo l'username vero
+                    } 
+                    else if ("info".equalsIgnoreCase(command)) {
+                        req.operation = "get_game"; 
+                    }
+                    else if ("submit".equalsIgnoreCase(command)) {
+                        req.operation = "propose_solution";
+                        // Esempio fisso per ora
+                        req.words = Arrays.asList("CANE", "GATTO", "SOLE", "MARE");
+                    }
+                    else {
+                        // Invia comando raw (utile per debug)
+                        req.operation = command;
+                    }
 
-                // 3. Ricezione
-                String jsonResponse = in.readLine();
-                if (jsonResponse == null) {
-                    System.out.println("Il server ha chiuso la connessione.");
-                    break;
+                    sendRequest(req);
                 }
-
-                // 4. Stampa
-                ServerResponse response = gson.fromJson(jsonResponse, ServerResponse.class);
-                System.out.println("[RISPOSTA SERVER]: Codice " + response.code + " - " + response.message);
-                if (response.data != null) {
-                    System.out.println(" -> Dati: " + response.data);
-                }
-            }
+            } // <--- Qui lo Scanner (e System.in) vengono rilasciati automaticamente
 
         } catch (IOException e) {
-            System.err.println("Errore di connessione: " + e.getMessage());
-            System.out.println("Assicurati che ServerMain sia avviato prima del Client!");
+            e.printStackTrace();
+        }
+    }
+
+    // --- Il resto del codice (sendRequest e ServerListener) rimane identico ---
+    
+    private static void sendRequest(ClientRequest req) {
+        try {
+            String json = gson.toJson(req);
+            ByteBuffer buffer = ByteBuffer.wrap(json.getBytes());
+            clientChannel.write(buffer);
+        } catch (IOException e) {
+            System.err.println("Errore invio: " + e.getMessage());
+        }
+    }
+
+    static class ServerListener implements Runnable {
+        @Override
+        public void run() {
+            try {
+                ByteBuffer buffer = ByteBuffer.allocate(2048);
+                while (clientChannel.isOpen()) {
+                    int bytesRead = clientChannel.read(buffer);
+                    if (bytesRead == -1) {
+                        System.out.println("\nServer chiuso.");
+                        System.exit(0);
+                    }
+                    if (bytesRead > 0) {
+                        buffer.flip();
+                        String jsonResponse = new String(buffer.array(), 0, bytesRead);
+                        try {
+                            ServerResponse resp = gson.fromJson(jsonResponse, ServerResponse.class);
+                            System.out.println("\n[SERVER]: " + resp.message);
+                            if (resp.data != null) System.out.println("Data: " + resp.data);
+                        } catch (Exception e) {
+                            System.out.println("\n[RAW MSG]: " + jsonResponse);
+                        }
+                        System.out.print("> "); 
+                        buffer.clear();
+                    }
+                }
+            } catch (IOException e) {
+                // Canale chiuso
+            }
         }
     }
 }
