@@ -4,86 +4,98 @@ import com.google.gson.Gson;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class ClientMain {
-    private static final String HOST = "127.0.0.1";
-    private static final int PORT = 8080;
-    private static final Gson gson = new Gson();
-    
-    // Canale NIO
+    // Configurazione
+    public static final String configFile = "client.properties";
+    public static String serverAddress;
+    public static int serverPort;
+
+    // Variabili per NIO
     private static SocketChannel clientChannel;
+    private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
         try {
-            // 1. Connessione NIO
+            // 1. Carico configurazione
+            readConfig();
+            
+            // 2. Connessione NIO
             clientChannel = SocketChannel.open();
-            clientChannel.connect(new InetSocketAddress(HOST, PORT));
+            clientChannel.connect(new InetSocketAddress(serverAddress, serverPort));
 
-            System.out.println("--- CLIENT NIO CONNESSO ---");
+            System.out.println("--- CLIENT NIO CONNESSO A " + serverAddress + ":" + serverPort + " ---");
             System.out.println("Comandi: login, info, submit, exit");
 
-            // 2. Avviamo il listener
+            // 3. Avvio listener
             new Thread(new ServerListener()).start();
 
-            // 3. FIX: TRY-WITH-RESOURCES per lo Scanner
-            // Lo dichiariamo dentro le parentesi tonde del try.
-            // Java lo chiuderà automaticamente alla fine delle parentesi graffe.
-            try (Scanner scanner = new Scanner(System.in)) {
-                
-                while (true) {
-                    System.out.print("> ");
-                    
-                    // Controllo se c'è una linea (evita eccezioni se fai CTRL+D o chiudi lo stream)
-                    if (!scanner.hasNextLine()) {
-                        break; 
-                    }
-                    
-                    String command = scanner.nextLine();
+            // 4. Input Loop
+            game();
 
-                    if ("exit".equalsIgnoreCase(command)) {
-                        // Chiudiamo il canale ed usciamo dal loop
-                        // Lo scanner verrà chiuso automaticamente dal try
-                        clientChannel.close();
-                        break;
-                    }
-
-                    ClientRequest req = new ClientRequest();
-
-                    if ("login".equalsIgnoreCase(command)) {
-                        req.operation = "login";
-                        System.out.print("Username: ");
-                        req.username = scanner.nextLine(); // Chiediamo l'username vero
-                    } 
-                    else if ("info".equalsIgnoreCase(command)) {
-                        req.operation = "get_game"; 
-                    }
-                    else if ("submit".equalsIgnoreCase(command)) {
-                        req.operation = "propose_solution";
-                        // Esempio fisso per ora
-                        req.words = Arrays.asList("CANE", "GATTO", "SOLE", "MARE");
-                    }
-                    else {
-                        // Invia comando raw (utile per debug)
-                        req.operation = command;
-                    }
-
-                    sendRequest(req);
-                }
-            } // <--- Qui lo Scanner (e System.in) vengono rilasciati automaticamente
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Errore: " + e.getMessage());
+            System.exit(1);
         }
     }
 
-    // --- Il resto del codice (sendRequest e ServerListener) rimane identico ---
-    
+    public static void readConfig() throws IOException {
+        try (InputStream input = new FileInputStream(configFile)) {
+            Properties prop = new Properties();
+            prop.load(input);
+
+            serverAddress = prop.getProperty("serverAddress");
+            serverPort = Integer.parseInt(prop.getProperty("serverPort"));
+        }
+    }
+
+    public static void game() {
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("> ");
+                if (!scanner.hasNextLine()) break; 
+                
+                String command = scanner.nextLine();
+
+                if ("exit".equalsIgnoreCase(command)) {
+                    clientChannel.close();
+                    break;
+                }
+
+                ClientRequest req = new ClientRequest();
+
+                if ("login".equalsIgnoreCase(command)) {
+                    req.operation = "login";
+                    System.out.print("Username: ");
+                    req.username = scanner.nextLine(); 
+                } 
+                else if ("info".equalsIgnoreCase(command)) {
+                    req.operation = "get_game"; 
+                }
+                else if ("submit".equalsIgnoreCase(command)) {
+                    req.operation = "propose_solution";
+                    req.words = Arrays.asList("CANE", "GATTO", "SOLE", "MARE");
+                }
+                else {
+                    req.operation = command;
+                }
+
+                sendRequest(req);
+            }
+        } catch (IOException e) {
+            System.err.println("Errore I/O nel game loop: " + e.getMessage());
+        }
+    }
+
     private static void sendRequest(ClientRequest req) {
         try {
             String json = gson.toJson(req);

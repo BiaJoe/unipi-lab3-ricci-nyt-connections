@@ -2,27 +2,52 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 
 public class ServerMain {
-    private static final int PORT = 8080;
-    private static final String DATA_FILE = "data/Connections_Data.json";
-    
+    // Configurazione
+    public static final String configFile = "server.properties";
+    public static int port;
+    public static String dataFilePath;
+    public static int gameDuration;
+
     // Stato del server
     private Game currentGame;
     private Selector selector;
-    
-    // Flag volatile per gestire l'arresto da thread diversi
     private volatile boolean running = true;
 
     public static void main(String[] args) {
+        // 0. Caricamento Configurazione
+        try {
+            readConfig();
+        } catch (IOException e) {
+            System.err.println("Errore caricamento " + configFile + ": " + e.getMessage());
+            System.exit(1);
+        }
+        
+        // Avvio istanza
         new ServerMain().start();
+    }
+
+    public static void readConfig() throws IOException {
+        // Usiamo FileInputStream per leggere dalla cartella root del progetto
+        try (InputStream input = new FileInputStream(configFile)) {
+            Properties prop = new Properties();
+            prop.load(input);
+
+            port = Integer.parseInt(prop.getProperty("port"));
+            dataFilePath = prop.getProperty("dataFilePath");
+            gameDuration = Integer.parseInt(prop.getProperty("gameDuration"));
+        }
     }
 
     public void start() {
@@ -30,27 +55,25 @@ public class ServerMain {
         Thread gameThread = new Thread(this::gameLoop);
         gameThread.start();
 
-        // 2. Avvio thread ascolto Console (per il comando exit)
+        // 2. Avvio thread ascolto Console
         startConsoleListener();
 
         // 3. Avvio Server NIO
         try {
             ServerSocketChannel serverChannel = ServerSocketChannel.open();
-            serverChannel.bind(new InetSocketAddress(PORT));
+            // Uso la variabile statica caricata da readConfig
+            serverChannel.bind(new InetSocketAddress(port)); 
             serverChannel.configureBlocking(false);
             
             selector = Selector.open();
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
             
-            System.out.println("Server avviato sulla porta " + PORT);
+            System.out.println("Server avviato sulla porta " + port);
+            System.out.println("Durata round: " + gameDuration + "s");
             System.out.println("Digita 'exit' per chiudere il server.");
 
-            // Loop principale
             while (running) {
-                // select() blocca, ma può essere svegliato da selector.wakeup()
                 selector.select(); 
-                
-                // Se siamo stati svegliati perché running è false, usciamo
                 if (!running) break;
 
                 Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -59,7 +82,6 @@ public class ServerMain {
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
                     iter.remove();
-
                     if (!key.isValid()) continue;
 
                     try {
@@ -69,7 +91,6 @@ public class ServerMain {
                             ClientHandler.handleRead(key, this);
                         }
                     } catch (IOException e) {
-                        // Gestione disconnessione improvvisa durante accept/read
                         key.cancel();
                         try { key.channel().close(); } catch (IOException ex) {}
                     }
@@ -78,8 +99,30 @@ public class ServerMain {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            // Chiusura pulita delle risorse
             closeServer();
+        }
+    }
+
+    // --- Metodi invariati ---
+    private void gameLoop() {
+        try (JsonReader reader = new JsonReader(new FileReader(dataFilePath))) {
+            Gson gson = new Gson();
+            reader.beginArray();
+            while (reader.hasNext() && running) { 
+                Game g = gson.fromJson(reader, Game.class);
+                setCurrentGame(g);
+                System.out.println("Nuova partita caricata ID: " + g.getGameId());
+                
+                try {
+                    // Uso la variabile statica gameDuration
+                    Thread.sleep(gameDuration * 1000L); 
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); 
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            if (running) e.printStackTrace(); 
         }
     }
 
@@ -92,7 +135,6 @@ public class ServerMain {
                     if ("exit".equalsIgnoreCase(command.trim())) {
                         System.out.println("Chiusura server in corso...");
                         running = false;
-                        // FONDAMENTALE: Sveglia il main thread che è bloccato su selector.select()
                         selector.wakeup();
                         break;
                     }
@@ -105,7 +147,6 @@ public class ServerMain {
         try {
             if (selector != null) selector.close();
             System.out.println("Server chiuso correttamente.");
-            // Forza la chiusura della JVM (utile per uccidere anche il thread gameLoop che sta dormendo)
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
@@ -118,28 +159,6 @@ public class ServerMain {
         System.out.println("Nuovo client: " + client.getRemoteAddress());
         ClientSession session = new ClientSession();
         client.register(selector, SelectionKey.OP_READ, session);
-    }
-
-    private void gameLoop() {
-        try (JsonReader reader = new JsonReader(new FileReader(DATA_FILE))) {
-            Gson gson = new Gson();
-            reader.beginArray();
-            while (reader.hasNext() && running) { // Controlliamo running anche qui
-                Game g = gson.fromJson(reader, Game.class);
-                setCurrentGame(g);
-                System.out.println("Nuova partita caricata ID: " + g.getGameId());
-                
-                // Dorme 60 secondi, o finché non viene interrotto
-                try {
-                    Thread.sleep(60000); 
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Ripristina stato interrupted
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            if (running) e.printStackTrace(); // Stampa errore solo se non stiamo chiudendo
-        }
     }
 
     public synchronized void setCurrentGame(Game g) { this.currentGame = g; }
