@@ -3,11 +3,11 @@ JAVA = java
 SRC_DIR = src
 BIN_DIR = bin
 LIB_DIR = lib
+DATA_DIR = data
 
 GSON_JAR = $(LIB_DIR)/gson-2.11.0.jar
 CLASSPATH = $(BIN_DIR):$(GSON_JAR)
 
-# Lista dei file sorgente (trova automaticamente tutti i .java nelle sottocartelle)
 SOURCES = $(SRC_DIR)/server/*.java \
           $(SRC_DIR)/client/*.java \
           $(SRC_DIR)/utils/*.java
@@ -27,4 +27,7 @@ client: compile
 clean:
 	@rm -rf $(BIN_DIR)
 
-.PHONY: all compile server client clean
+reset: clean
+	@rm -f $(DATA_DIR)/Users.json
+
+.PHONY: all compile server client clean reset

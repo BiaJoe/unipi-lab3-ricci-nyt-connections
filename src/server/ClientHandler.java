@@ -11,12 +11,20 @@ public class ClientHandler {
         SocketChannel client = (SocketChannel) key.channel();
         ClientSession session = (ClientSession) key.attachment();
         
-        ByteBuffer buffer = ByteBuffer.allocate(2048);
-        int bytesRead = client.read(buffer);
+        ByteBuffer buffer = ByteBuffer.allocate(4096);
+        int bytesRead;
+        try {
+            bytesRead = client.read(buffer);
+        } catch (IOException e) {
+            // Disconnessione improvvisa
+            server.removeClient(client);
+            key.cancel();
+            return;
+        }
 
         if (bytesRead == -1) {
             System.out.println("Client disconnesso: " + client.getRemoteAddress());
-            client.close();
+            server.removeClient(client); // Rimuovi dalla lista broadcast
             key.cancel();
             return;
         }
@@ -27,26 +35,23 @@ public class ClientHandler {
             buffer.get(data);
             String chunk = new String(data);
             
-            // Aggiungiamo al buffer della sessione (gestione frammentazione)
             session.getBuffer().append(chunk);
             
-            // Controllo grezzo fine messaggio (assumiamo che il client mandi \n alla fine o JSON completo)
-            // In un progetto reale qui si controllano le parentesi graffe bilanciate
             String fullMessage = session.getBuffer().toString();
+            // Controllo semplificato JSON
             if (fullMessage.trim().endsWith("}")) { 
-                
                 System.out.println("Ricevuto: " + fullMessage);
                 
-                // Processiamo
                 String response = RequestProcessor.process(fullMessage, session, server);
                 
-                // Rispondiamo
                 if (response != null) {
-                    ByteBuffer out = ByteBuffer.wrap((response + "\n").getBytes());
-                    client.write(out);
+                    try {
+                        client.write(ByteBuffer.wrap(response.getBytes()));
+                    } catch (IOException e) {
+                        server.removeClient(client);
+                        key.cancel();
+                    }
                 }
-                
-                // Puliamo il buffer per il prossimo comando
                 session.getBuffer().setLength(0);
             }
         }
