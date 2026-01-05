@@ -3,6 +3,9 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import server.models.User;
+import server.models.UserStats;
 import utils.ServerResponse.RankingEntry;
 
 import java.io.*;
@@ -15,7 +18,8 @@ public class UserManager {
     private static UserManager instance;
     private ConcurrentHashMap<String, User> users; 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private final String usersFilePath = ServerMain.usersFilePath;
+    
+    private final String usersFilePath = ServerConfig.USERS_FILE_PATH;
 
     private UserManager() { loadUsers(); }
 
@@ -36,38 +40,38 @@ public class UserManager {
         return true;
     }
 
-    // NUOVO: Aggiornamento credenziali
+    // CORRETTO: Gestione aggiornamento senza perdere le statistiche
     public synchronized boolean updateCredentials(String oldName, String newName, String oldPsw, String newPsw) {
         User u = users.get(oldName);
         if (u == null || !u.getPassword().equals(oldPsw)) return false;
 
-        // Se vuole cambiare nome
+        // 1. Cambio Username
         if (newName != null && !newName.isEmpty() && !newName.equals(oldName)) {
             if (users.containsKey(newName)) return false; // Nuovo nome occupato
-            // Rimuovo vecchio, metto nuovo (mantenendo stats)
-            User newUser = new User(newName, (newPsw != null ? newPsw : oldPsw));
-            // Copia brutale delle statistiche (dovresti fare un metodo clone o setter)
-            // Per semplicità qui assumiamo che UserStats sia accessibile
-            newUser.getStats().puzzlesPlayed = u.getStats().puzzlesPlayed; 
-            // ... copiare tutti i campi stats ... (o spostare l'oggetto stats)
+            
+            // Creo nuovo utente
+            User newUser = new User(newName, (newPsw != null && !newPsw.isEmpty() ? newPsw : oldPsw));
+            
+            // CRUCIALE: Trasferisco l'oggetto stats dal vecchio al nuovo
+            // (Assumendo che User.getStats() ritorni il riferimento all'oggetto mutabile)
+            newUser.setStats(u.getStats()); 
+            
             users.remove(oldName);
             users.put(newName, newUser);
+            
         } else if (newPsw != null && !newPsw.isEmpty()) {
-            // Cambio solo password
-            // In un sistema reale User dovrebbe essere mutabile o ricreato
-            users.put(oldName, new User(oldName, newPsw)); 
-            // Nota: perderesti le stats se ricrei l'oggetto User senza copiarle!
-            // FIX RAPIDO: Aggiungi setPassword in User.java
+            // 2. Cambio solo Password
+            u.setPassword(newPsw);
         }
+        
         saveUsers();
         return true;
     }
 
-    // NUOVO: Classifica
     public List<RankingEntry> getLeaderboard() {
         return users.values().stream()
-                .sorted((u1, u2) -> Integer.compare(u2.getStats().puzzlesWon, u1.getStats().puzzlesWon)) // Ordina per vittorie
-                .map(u -> new RankingEntry(0, u.getUsername(), u.getStats().puzzlesWon)) // Posizione calcolata dopo
+                .sorted((u1, u2) -> Integer.compare(u2.getStats().puzzlesWon, u1.getStats().puzzlesWon))
+                .map(u -> new RankingEntry(0, u.getUsername(), u.getStats().puzzlesWon))
                 .collect(Collectors.toList());
     }
 
@@ -85,8 +89,18 @@ public class UserManager {
         User u = users.get(username);
         return (u != null) ? u.getStats() : null;
     }
+    
+    public synchronized void updateStatsTimeOut(String username) {
+        User u = users.get(username);
+        if (u != null) {
+            u.getStats().puzzlesPlayed++; 
+            u.getStats().currentStreak = 0; 
+            saveUsers();
+        }
+    }
 
     private void loadUsers() {
+        if (usersFilePath == null) return;
         File file = new File(usersFilePath);
         if (!file.exists()) { initFile(file); return; }
         try (FileReader reader = new FileReader(file)) {
@@ -106,17 +120,8 @@ public class UserManager {
     }
 
     private void saveUsers() {
+        if (usersFilePath == null || users == null) return;
         try (FileWriter writer = new FileWriter(usersFilePath)) { gson.toJson(users, writer); } 
         catch (IOException e) { e.printStackTrace(); }
-    }
-
-    public synchronized void updateStatsTimeOut(String username) {
-        User u = users.get(username);
-        if (u != null) {
-            u.getStats().puzzlesPlayed++; // Conta come giocata
-            u.getStats().currentStreak = 0; // Azzera la streak [cite: 103]
-            // Opzionale: potresti voler salvare gli errori fatti finora nell'istogramma
-            saveUsers();
-        }
     }
 }

@@ -3,13 +3,29 @@
     "username": "B",
     "password": "M",
     "stats": {
-      "puzzlesPlayed": 39,
-      "puzzlesWon": 1,
+      "puzzlesPlayed": 0,
+      "puzzlesWon": 0,
       "currentStreak": 0,
-      "maxStreak": 1,
+      "maxStreak": 0,
       "winDistribution": [
         0,
-        1,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "N": {
+    "username": "N",
+    "password": "C",
+    "stats": {
+      "puzzlesPlayed": 4,
+      "puzzlesWon": 0,
+      "currentStreak": 0,
+      "maxStreak": 0,
+      "winDistribution": [
+        0,
+        0,
         0,
         0
       ]

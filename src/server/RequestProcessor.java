@@ -1,6 +1,11 @@
 package server;
 
 import com.google.gson.Gson;
+import server.models.ClientSession;
+import server.models.Game;
+import server.models.Group;
+import server.models.LiveStats;
+import server.models.UserStats;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
@@ -36,11 +41,11 @@ public class RequestProcessor {
                     if (UserManager.getInstance().login(req.username, req.psw)) {
                         session.setUsername(req.username);
                         session.setLoggedIn(true);
-                        
+                        Game current = GameManager.getInstance().getCurrentGame();
                         ServerResponse resp = new ServerResponse();
                         resp.status = "OK";
                         resp.message = "Login effettuato";
-                        resp.gameInfo = buildGameInfo(server.getCurrentGame(), session, server);
+                        resp.gameInfo = buildGameInfo(current, session);
                         return gson.toJson(resp);
                     }
                     return error("Credenziali errate", 401);
@@ -57,36 +62,32 @@ public class RequestProcessor {
                 case "submitProposal": {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
                     if (req.words == null || req.words.size() != 4) return error("Servono 4 parole", 400);
-                    
-                    if (server.getTimeLeft() <= 0) return error("Tempo scaduto", 408);
+                    if (GameManager.getInstance().getTimeLeft() <= 0) return error("Tempo scaduto", 408);
                     if (session.isGameFinished()) return error("Hai già terminato la partita", 409);
 
-                    return processProposal(req.words, session, server.getCurrentGame());
+                    return processProposal(req.words, session, GameManager.getInstance().getCurrentGame());
                 }
 
                 case "requestGameInfo": {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
-                    return getGameInfoResponse(server.getCurrentGame(), session, server);
+                    return getGameInfoResponse(GameManager.getInstance().getCurrentGame(), session);
                 }
                 
                 case "requestGameStats": {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
-                    int gId = (req.gameId != null) ? req.gameId : (server.getCurrentGame() != null ? server.getCurrentGame().getGameId() : -1);
+                    Game currentG = GameManager.getInstance().getCurrentGame();
+                    int gId = (req.gameId != null && req.gameId != 0) ? req.gameId : (currentG != null ? currentG.getGameId() : -1);
                     
-                    if (server.getCurrentGame() == null || server.getCurrentGame().getGameId() != gId) {
-                         return error("Partita non trovata o non attiva", 404);
-                    }
+                    if (currentG == null || currentG.getGameId() != gId) return error("Partita non attiva", 404);
 
                     ServerResponse resp = new ServerResponse();
                     resp.status = "OK";
                     resp.gameId = gId;
-                    
-                    ServerMain.GameStats stats = server.calculateCurrentGameStats();
+                    LiveStats stats = GameManager.getInstance().calculateStats(server.getAllSessions());
                     resp.playersActive = stats.active;
                     resp.playersFinished = stats.finished;
                     resp.playersWon = stats.won;
-                    resp.timeLeft = server.getTimeLeft();
-                    
+                    resp.timeLeft = GameManager.getInstance().getTimeLeft();
                     return gson.toJson(resp);
                 }
 
@@ -95,17 +96,17 @@ public class RequestProcessor {
                     UserStats stats = UserManager.getInstance().getUserStats(session.getUsername());
                     ServerResponse resp = new ServerResponse();
                     resp.status = "OK";
-                    
-                    resp.puzzlesCompleted = stats.puzzlesPlayed;
-                    resp.puzzlesWon = stats.puzzlesWon;
-                    resp.currentStreak = stats.currentStreak;
-                    resp.maxStreak = stats.maxStreak;
-                    resp.mistakeHistogram = stats.winDistribution;
-                    
-                    if (stats.puzzlesPlayed > 0) {
-                        resp.winRate = (float)stats.puzzlesWon / stats.puzzlesPlayed * 100;
-                        resp.lossRate = 100.0f - resp.winRate;
-                    } else { resp.winRate = 0f; resp.lossRate = 0f; }
+                    if (stats != null) {
+                        resp.puzzlesCompleted = stats.puzzlesPlayed;
+                        resp.puzzlesWon = stats.puzzlesWon;
+                        resp.currentStreak = stats.currentStreak;
+                        resp.maxStreak = stats.maxStreak;
+                        resp.mistakeHistogram = stats.winDistribution;
+                        if (stats.puzzlesPlayed > 0) {
+                            resp.winRate = (float)stats.puzzlesWon / stats.puzzlesPlayed * 100;
+                            resp.lossRate = 100.0f - resp.winRate;
+                        }
+                    }
                     return gson.toJson(resp);
                 }
 
@@ -116,46 +117,41 @@ public class RequestProcessor {
                     resp.rankings = UserManager.getInstance().getLeaderboard();
                     for (int i = 0; i < resp.rankings.size(); i++) {
                         resp.rankings.get(i).position = i + 1;
-                        if (resp.rankings.get(i).username.equals(session.getUsername())) {
-                            resp.yourPosition = i + 1;
-                        }
+                        if (resp.rankings.get(i).username.equals(session.getUsername())) resp.yourPosition = i + 1;
                     }
                     return gson.toJson(resp);
                 }
 
-                default:
-                    return error("Operazione non supportata", 404);
+                default: return error("Operazione non supportata", 404);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return error("Errore interno: " + e.getMessage(), 500);
+            return error("Errore interno", 500);
         }
     }
 
-    // --- HELPER METHODS ---
-
     private static String processProposal(List<String> userWords, ClientSession session, Game game) {
-        // Normalizza
+        if (game == null) return error("Nessuna partita in corso", 500);
+
         List<String> normalizedProposal = userWords.stream().map(String::toUpperCase).collect(Collectors.toList());
         List<String> allGameWords = new ArrayList<>();
         for(Group g : game.getGroups()) allGameWords.addAll(g.getWords());
         
-        // Validazione (Nessuna penalità per parole non esistenti/malformate [cite: 126])
         if (!allGameWords.containsAll(normalizedProposal)) {
-            return error("Proposta non valida: contiene parole non presenti nella partita.", 410);
+            return error("Proposta non valida: parole non presenti.", 410);
         }
         
+        // Check parole già usate
         for (String theme : session.getGuessedThemes()) {
             for(Group g : game.getGroups()) {
                 if(g.getTheme().equals(theme)) {
                     for(String w : normalizedProposal) {
-                        if(g.getWords().contains(w)) return error("Parola già usata in un gruppo corretto.", 411);
+                        if(g.getWords().contains(w)) return error("Parola già usata.", 411);
                     }
                 }
             }
         }
         
-        // Controllo Semantico
         ServerResponse resp = new ServerResponse();
         resp.status = "OK";
         
@@ -174,35 +170,32 @@ public class RequestProcessor {
 
         if (found) {
              resp.message = "Gruppo Trovato!";
-             
-             // --- REGOLA: 3 Gruppi = Vittoria (l'ultimo è implicito)  ---
              if (session.getScore() == 3) {
-                 // Trova e aggiungi il 4° gruppo mancante
                  for (Group g : game.getGroups()) {
                      if (!session.isThemeGuessed(g.getTheme())) {
                          session.addGuessedTheme(g.getTheme()); 
                          break;
                      }
                  }
-
-                 // Vittoria!
                  UserManager.getInstance().updateStatsWin(session.getUsername(), session.getErrors());
                  session.setGameFinished(true);
                  resp.message = "VITTORIA!";
-                 resp.isFinished = true; // Invia stato finito così il client può mostrare tutto
+                 resp.isFinished = true;
              }
+             // Allega griglia aggiornata (coi buchi)
+             resp.gameInfo = buildGameInfo(game, session);
+
         } else {
-             // Errore: Penalità [cite: 20]
              session.incrementErrors();
              resp.isCorrect = false;
              resp.message = "Sbagliato.";
              
-             // Sconfitta per max errori [cite: 10]
-             if (session.getErrors() >= ServerMain.maxErrors) {
+             if (session.getErrors() >= ServerConfig.MAX_ERRORS) {
                  UserManager.getInstance().updateStatsLoss(session.getUsername());
                  session.setGameFinished(true);
-                 resp.message = "HAI PERSO (Troppi errori)";
+                 resp.message = "HAI PERSO";
                  resp.isFinished = true;
+                 resp.gameInfo = buildGameInfo(game, session);
              }
         }
         
@@ -211,53 +204,73 @@ public class RequestProcessor {
         return gson.toJson(resp);
     }
 
-    // Costruzione GameInfo per il client (Public per uso in ServerMain)
-    public static ServerResponse.GameInfo buildGameInfo(Game g, ClientSession session, ServerMain server) {
+    // --- MODIFICA CRUCIALE PER LA GRIGLIA PERSISTENTE ---
+    public static ServerResponse.GameInfo buildGameInfo(Game g, ClientSession session) {
         ServerResponse.GameInfo info = new ServerResponse.GameInfo();
         if (g == null) return info;
 
         info.gameId = g.getGameId();
         info.mistakes = session.getErrors();
         info.currentScore = session.getScore(); 
-        info.timeLeft = server.getTimeLeft();
+        info.timeLeft = GameManager.getInstance().getTimeLeft();
 
-        List<String> visibleWords = new ArrayList<>();
-        for (Group group : g.getGroups()) {
-            if (!session.isThemeGuessed(group.getTheme())) {
-                visibleWords.addAll(group.getWords());
+        // 1. Recupera o crea lo shuffle persistente
+        List<String> personalList = session.getPersonalShuffledWords();
+        if (personalList == null || personalList.isEmpty()) {
+            personalList = new ArrayList<>();
+            for (Group group : g.getGroups()) {
+                personalList.addAll(group.getWords());
+            }
+            Collections.shuffle(personalList);
+            session.setPersonalShuffledWords(personalList);
+        }
+
+        // 2. Costruisci la lista da visualizzare (con buchi)
+        List<String> displayWords = new ArrayList<>();
+        
+        for (String word : personalList) {
+            boolean isGuessed = false;
+            // Controlla se la parola appartiene a un gruppo già indovinato
+            for (Group group : g.getGroups()) {
+                if (session.isThemeGuessed(group.getTheme()) && group.getWords().contains(word)) {
+                    isGuessed = true;
+                    break;
+                }
+            }
+
+            if (isGuessed) {
+                displayWords.add(""); // STRINGA VUOTA AL POSTO DELLA PAROLA
+            } else {
+                displayWords.add(word);
             }
         }
-        Collections.shuffle(visibleWords);
-        info.words = visibleWords;
+
+        info.words = displayWords;
         return info;
     }
 
-    private static String getGameInfoResponse(Game g, ClientSession session, ServerMain server) {
+    private static String getGameInfoResponse(Game g, ClientSession session) {
         if (g == null) return error("Nessuna partita attiva", 404);
 
         ServerResponse resp = new ServerResponse();
         resp.status = "OK";
         resp.gameId = g.getGameId();
-        resp.timeLeft = server.getTimeLeft();
-        
+        resp.timeLeft = GameManager.getInstance().getTimeLeft();
         boolean userFinished = session.isGameFinished();
         resp.isFinished = (resp.timeLeft <= 0) || userFinished;
-        
         resp.mistakes = session.getErrors();
         resp.currentScore = session.getScore();
         
-        List<String> words = new ArrayList<>();
-        resp.correctGroups = new ArrayList<>();
+        // Usa la logica centralizzata per la griglia
+        ServerResponse.GameInfo info = buildGameInfo(g, session);
+        resp.wordsToGroup = info.words; 
         
+        resp.correctGroups = new ArrayList<>();
         for (Group gr : g.getGroups()) {
             if (session.isThemeGuessed(gr.getTheme())) {
                 resp.correctGroups.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
-            } else {
-                words.addAll(gr.getWords());
             }
         }
-        Collections.shuffle(words);
-        resp.wordsToGroup = words; 
         
         if (resp.isFinished) {
             resp.solution = new ArrayList<>();
