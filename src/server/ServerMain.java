@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Scanner;
@@ -53,7 +54,6 @@ public class ServerMain {
             prop.load(input);
             port = Integer.parseInt(prop.getProperty("port", "8080"));
             
-            // Lettura flag test mode (default false)
             testMode = Boolean.parseBoolean(prop.getProperty("testMode", "false"));
             
             if (testMode) {
@@ -71,23 +71,21 @@ public class ServerMain {
 
     public void start() {
         try {
-            // 1. INIZIALIZZAZIONE RETE (Prima di far partire i thread!)
             ServerSocketChannel serverChannel = ServerSocketChannel.open();
             serverChannel.bind(new InetSocketAddress(port)); 
             serverChannel.configureBlocking(false);
             
-            selector = Selector.open(); // Inizializzato QUI per evitare NullPointer nel gameLoop
+            selector = Selector.open();
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
             
             System.out.println("Server avviato sulla porta " + port);
 
-            // 2. AVVIO THREAD AUSILIARI
+            // AVVIO THREAD DI GIOCO (Streaming dal file)
             Thread gameThread = new Thread(this::gameLoop);
             gameThread.start();
             
             startConsoleListener();
 
-            // 3. LOOP DI RETE PRINCIPALE
             while (running) {
                 selector.select(); 
                 if (!running) break;
@@ -113,91 +111,104 @@ public class ServerMain {
         }
     }
 
-    // --- GAME LOOP ---
+    // --- GAME LOOP (STREAMING INFINITO) ---
     private void gameLoop() {
-        try (JsonReader reader = new JsonReader(new FileReader(dataFilePath))) {
-            Gson gson = new Gson();
-            reader.beginArray();
-            
-            while (reader.hasNext() && running) { 
-                Game g = gson.fromJson(reader, Game.class);
-                
-                // --- FASE 1: INIZIO NUOVA PARTITA ---
-                setCurrentGame(g);
-                this.gameStartTime = System.currentTimeMillis(); 
-                
-                // Reset sessioni e PUSH nuove parole
-                if (selector != null) {
-                    for (SelectionKey key : selector.keys()) {
-                        if (key.isValid() && key.attachment() instanceof ClientSession) {
-                            ClientSession session = (ClientSession) key.attachment();
-                            session.resetGameStatus(); // Reset per tutti
-                            
-                            // Se loggato, invia subito la nuova griglia!
-                            if (session.isLoggedIn()) {
-                                ServerResponse resp = new ServerResponse();
-                                resp.status = "OK";
-                                resp.message = "NUOVA PARTITA INIZIATA!";
-                                resp.gameInfo = RequestProcessor.buildGameInfo(g, session, this);
-                                sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
-                            }
-                        }
-                    }
-                }
+        Gson gson = new Gson();
 
-                System.out.println("--- NUOVA PARTITA ID: " + g.getGameId() + " ---");
+        // CICLO ESTERNO: Riapre il file quando finisce
+        while (running) {
+            try (JsonReader reader = new JsonReader(new FileReader(dataFilePath))) {
                 
-                // Attesa durata partita
-                try {
-                    Thread.sleep(gameDuration * 1000L); 
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); 
-                    break;
-                }
+                // Assumiamo che il JSON inizi con un array '['
+                reader.beginArray(); 
                 
-                // --- FASE 2: FINE PARTITA (TEMPO SCADUTO) ---
-                if (selector != null) {
-                    for (SelectionKey key : selector.keys()) {
-                        if (key.isValid() && key.attachment() instanceof ClientSession) {
-                            ClientSession session = (ClientSession) key.attachment();
-                            
-                            if (session.isLoggedIn()) {
-                                // Aggiorna stats Time Out se non aveva finito
-                                if (!session.isGameFinished()) {
-                                    UserManager.getInstance().updateStatsTimeOut(session.getUsername());
-                                }
+                // CICLO INTERNO: Scorre le partite finché ce ne sono nel file
+                while (reader.hasNext() && running) { 
+                    Game g = gson.fromJson(reader, Game.class);
+                    
+                    // --- FASE 1: INIZIO NUOVA PARTITA ---
+                    setCurrentGame(g);
+                    this.gameStartTime = System.currentTimeMillis(); 
+                    
+                    // Reset sessioni e invio NUOVA PARTITA a tutti
+                    if (selector != null) {
+                        for (SelectionKey key : selector.keys()) {
+                            if (key.isValid() && key.attachment() instanceof ClientSession) {
+                                ClientSession session = (ClientSession) key.attachment();
+                                session.resetGameStatus(); 
                                 
-                                // PUSH Soluzione e Risultato finale
-                                ServerResponse resp = new ServerResponse();
-                                resp.status = "EVENT";
-                                resp.message = "TEMPO SCADUTO";
-                                resp.isFinished = true;
-                                resp.solution = new java.util.ArrayList<>();
-                                for (Group gr : g.getGroups()) {
-                                    resp.solution.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
+                                if (session.isLoggedIn()) {
+                                    ServerResponse resp = new ServerResponse();
+                                    resp.status = "OK";
+                                    resp.message = "NUOVA PARTITA INIZIATA!";
+                                    // Inviamo subito la griglia per evitare il "limbo"
+                                    resp.gameInfo = RequestProcessor.buildGameInfo(g, session, this);
+                                    sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
                                 }
-                                sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
                             }
                         }
                     }
+
+                    System.out.println("--- NUOVA PARTITA ID: " + g.getGameId() + " ---");
+                    
+                    // Attesa durata partita
+                    try {
+                        Thread.sleep(gameDuration * 1000L); 
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); 
+                        break;
+                    }
+                    
+                    // --- FASE 2: FINE PARTITA (TEMPO SCADUTO) ---
+                    if (selector != null) {
+                        for (SelectionKey key : selector.keys()) {
+                            if (key.isValid() && key.attachment() instanceof ClientSession) {
+                                ClientSession session = (ClientSession) key.attachment();
+                                
+                                if (session.isLoggedIn()) {
+                                    // Aggiorna stats Time Out se non aveva finito
+                                    if (!session.isGameFinished()) {
+                                        UserManager.getInstance().updateStatsTimeOut(session.getUsername());
+                                    }
+                                    
+                                    // PUSH Soluzione
+                                    ServerResponse resp = new ServerResponse();
+                                    resp.status = "EVENT";
+                                    resp.message = "TEMPO SCADUTO";
+                                    resp.isFinished = true;
+                                    resp.solution = new ArrayList<>();
+                                    for (Group gr : g.getGroups()) {
+                                        resp.solution.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
+                                    }
+                                    sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Qui reader.hasNext() è false (fine file).
+                // Il try-with-resources chiuderà il reader.
+                // Il while(running) ricomincerà e riaprirà il file dall'inizio.
+                System.out.println("--- FINE FILE PARTITE: RICOMINCIO DALL'INIZIO ---");
+
+            } catch (Exception e) {
+                if (running) {
+                    e.printStackTrace();
+                    // Pausa tattica per evitare loop infinito veloce in caso di errore file (es. file non trovato)
+                    try { Thread.sleep(5000); } catch (InterruptedException ie) {}
                 }
             }
-        } catch (Exception e) {
-            if (running) e.printStackTrace();
         }
     }
     
-    // Helper per inviare JSON diretto a un client specifico
     private void sendJsonToClient(SocketChannel client, String json) {
         if (client == null || !client.isOpen()) return;
         try {
             client.write(ByteBuffer.wrap(json.getBytes()));
-        } catch (IOException e) {
-            // Ignora errori su socket chiusi durante il broadcast
-        }
+        } catch (IOException e) {}
     }
     
-    // Helper statistiche
     public static class GameStats {
         public int active;
         public int finished;
@@ -207,16 +218,13 @@ public class ServerMain {
     public GameStats calculateCurrentGameStats() {
         GameStats stats = new GameStats();
         if (selector == null) return stats;
-
         for (SelectionKey key : selector.keys()) {
             if (key.isValid() && key.attachment() instanceof ClientSession) {
                 ClientSession session = (ClientSession) key.attachment();
                 if (session.isLoggedIn()) {
                     if (session.isGameFinished()) {
                         stats.finished++;
-                        if (session.getScore() == 4) { // Score 4 = Vittoria
-                            stats.won++;
-                        }
+                        if (session.getScore() == 4) stats.won++;
                     } else {
                         stats.active++;
                     }
@@ -226,24 +234,6 @@ public class ServerMain {
         return stats;
     }
 
-    // Broadcast generico (opzionale, usato per messaggi sistema)
-    public void broadcastGameUpdate(String message) {
-        ServerResponse resp = new ServerResponse();
-        resp.status = "EVENT"; 
-        resp.message = message;
-        
-        String json = new Gson().toJson(resp);
-        ByteBuffer buffer = ByteBuffer.wrap(json.getBytes());
-
-        for (SocketChannel client : connectedClients) {
-            if (client.isOpen()) {
-                try {
-                    client.write(buffer.duplicate());
-                } catch (IOException e) {}
-            }
-        }
-    }
-    
     public void removeClient(SocketChannel client) {
         connectedClients.remove(client);
         try { client.close(); } catch (IOException e) {}

@@ -1,15 +1,15 @@
 {
-  "1": {
-    "username": "1",
-    "password": "2",
+  "B": {
+    "username": "B",
+    "password": "M",
     "stats": {
-      "puzzlesPlayed": 1,
+      "puzzlesPlayed": 39,
       "puzzlesWon": 1,
-      "currentStreak": 1,
+      "currentStreak": 0,
       "maxStreak": 1,
       "winDistribution": [
-        1,
         0,
+        1,
         0,
         0
       ]
