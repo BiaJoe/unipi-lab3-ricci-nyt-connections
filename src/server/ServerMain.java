@@ -2,7 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import utils.ServerResponse; // Importante per il broadcast JSON
+import utils.ServerResponse; 
 
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -25,10 +25,11 @@ public class ServerMain {
     public static String usersFilePath;
     public static int gameDuration;
     public static int maxErrors;
+    public static boolean testMode;
 
     // Stato del server
     private Game currentGame;
-    private Selector selector;
+    private Selector selector; 
     private volatile boolean running = true;
     private long gameStartTime;
     
@@ -51,7 +52,17 @@ public class ServerMain {
             Properties prop = new Properties();
             prop.load(input);
             port = Integer.parseInt(prop.getProperty("port", "8080"));
-            dataFilePath = prop.getProperty("dataFilePath", "data/Connections_Data.json");
+            
+            // Lettura flag test mode (default false)
+            testMode = Boolean.parseBoolean(prop.getProperty("testMode", "false"));
+            
+            if (testMode) {
+                System.out.println("!!! MODALITÀ TEST ATTIVA: Caricamento Connections_Test.json !!!");
+                dataFilePath = "data/Connections_Test.json";
+            } else {
+                dataFilePath = prop.getProperty("dataFilePath", "data/Connections_Data.json");
+            }
+
             usersFilePath = prop.getProperty("usersFilePath", "data/Users.json");
             gameDuration = Integer.parseInt(prop.getProperty("gameDuration", "60"));
             maxErrors = Integer.parseInt(prop.getProperty("maxErrors", "4"));
@@ -59,19 +70,24 @@ public class ServerMain {
     }
 
     public void start() {
-        Thread gameThread = new Thread(this::gameLoop);
-        gameThread.start();
-        startConsoleListener();
-
         try {
+            // 1. INIZIALIZZAZIONE RETE (Prima di far partire i thread!)
             ServerSocketChannel serverChannel = ServerSocketChannel.open();
             serverChannel.bind(new InetSocketAddress(port)); 
             serverChannel.configureBlocking(false);
-            selector = Selector.open();
+            
+            selector = Selector.open(); // Inizializzato QUI per evitare NullPointer nel gameLoop
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
             
             System.out.println("Server avviato sulla porta " + port);
 
+            // 2. AVVIO THREAD AUSILIARI
+            Thread gameThread = new Thread(this::gameLoop);
+            gameThread.start();
+            
+            startConsoleListener();
+
+            // 3. LOOP DI RETE PRINCIPALE
             while (running) {
                 selector.select(); 
                 if (!running) break;
@@ -86,7 +102,7 @@ public class ServerMain {
                         if (key.isAcceptable()) acceptConnection(serverChannel);
                         else if (key.isReadable()) ClientHandler.handleRead(key, this);
                     } catch (IOException e) {
-                        disconnectClient(key); // Gestione disconnessione pulita
+                        disconnectClient(key); 
                     }
                 }
             }
@@ -97,26 +113,41 @@ public class ServerMain {
         }
     }
 
-    // --- GAME LOOP AGGIORNATO CON BROADCAST ---
+    // --- GAME LOOP ---
     private void gameLoop() {
         try (JsonReader reader = new JsonReader(new FileReader(dataFilePath))) {
             Gson gson = new Gson();
             reader.beginArray();
+            
             while (reader.hasNext() && running) { 
                 Game g = gson.fromJson(reader, Game.class);
+                
+                // --- FASE 1: INIZIO NUOVA PARTITA ---
                 setCurrentGame(g);
                 this.gameStartTime = System.currentTimeMillis(); 
                 
-                // Reset sessioni per la nuova partita (pulisce errori vecchi)
-                for (SelectionKey key : selector.keys()) {
-                    if (key.attachment() instanceof ClientSession) {
-                        ((ClientSession) key.attachment()).resetGameStatus();
+                // Reset sessioni e PUSH nuove parole
+                if (selector != null) {
+                    for (SelectionKey key : selector.keys()) {
+                        if (key.isValid() && key.attachment() instanceof ClientSession) {
+                            ClientSession session = (ClientSession) key.attachment();
+                            session.resetGameStatus(); // Reset per tutti
+                            
+                            // Se loggato, invia subito la nuova griglia!
+                            if (session.isLoggedIn()) {
+                                ServerResponse resp = new ServerResponse();
+                                resp.status = "OK";
+                                resp.message = "NUOVA PARTITA INIZIATA!";
+                                resp.gameInfo = RequestProcessor.buildGameInfo(g, session, this);
+                                sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
+                            }
+                        }
                     }
                 }
 
                 System.out.println("--- NUOVA PARTITA ID: " + g.getGameId() + " ---");
-                broadcastGameUpdate("NUOVA PARTITA INIZIATA! ID: " + g.getGameId());
-
+                
+                // Attesa durata partita
                 try {
                     Thread.sleep(gameDuration * 1000L); 
                 } catch (InterruptedException e) {
@@ -124,33 +155,82 @@ public class ServerMain {
                     break;
                 }
                 
-                // --- TEMPO SCADUTO: Salvataggio statistiche per chi non ha finito ---
-                // Iteriamo su tutte le chiavi del selettore per trovare i client
-                for (SelectionKey key : selector.keys()) {
-                    if (key.isValid() && key.attachment() instanceof ClientSession) {
-                        ClientSession session = (ClientSession) key.attachment();
-                        
-                        // Se l'utente è loggato e NON ha finito la partita (non ha vinto né perso)
-                        if (session.isLoggedIn() && !session.isGameFinished()) {
-                            // Aggiorniamo le stats (Time Out)
-                            UserManager.getInstance().updateStatsTimeOut(session.getUsername());
+                // --- FASE 2: FINE PARTITA (TEMPO SCADUTO) ---
+                if (selector != null) {
+                    for (SelectionKey key : selector.keys()) {
+                        if (key.isValid() && key.attachment() instanceof ClientSession) {
+                            ClientSession session = (ClientSession) key.attachment();
+                            
+                            if (session.isLoggedIn()) {
+                                // Aggiorna stats Time Out se non aveva finito
+                                if (!session.isGameFinished()) {
+                                    UserManager.getInstance().updateStatsTimeOut(session.getUsername());
+                                }
+                                
+                                // PUSH Soluzione e Risultato finale
+                                ServerResponse resp = new ServerResponse();
+                                resp.status = "EVENT";
+                                resp.message = "TEMPO SCADUTO";
+                                resp.isFinished = true;
+                                resp.solution = new java.util.ArrayList<>();
+                                for (Group gr : g.getGroups()) {
+                                    resp.solution.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
+                                }
+                                sendJsonToClient((SocketChannel)key.channel(), gson.toJson(resp));
+                            }
                         }
                     }
                 }
-
-                broadcastGameUpdate("TEMPO SCADUTO! Fine partita " + g.getGameId());
             }
         } catch (Exception e) {
             if (running) e.printStackTrace();
         }
     }
     
-    // Metodo per inviare messaggi a TUTTI i client connessi (Async TCP notification)
+    // Helper per inviare JSON diretto a un client specifico
+    private void sendJsonToClient(SocketChannel client, String json) {
+        if (client == null || !client.isOpen()) return;
+        try {
+            client.write(ByteBuffer.wrap(json.getBytes()));
+        } catch (IOException e) {
+            // Ignora errori su socket chiusi durante il broadcast
+        }
+    }
+    
+    // Helper statistiche
+    public static class GameStats {
+        public int active;
+        public int finished;
+        public int won;
+    }
+
+    public GameStats calculateCurrentGameStats() {
+        GameStats stats = new GameStats();
+        if (selector == null) return stats;
+
+        for (SelectionKey key : selector.keys()) {
+            if (key.isValid() && key.attachment() instanceof ClientSession) {
+                ClientSession session = (ClientSession) key.attachment();
+                if (session.isLoggedIn()) {
+                    if (session.isGameFinished()) {
+                        stats.finished++;
+                        if (session.getScore() == 4) { // Score 4 = Vittoria
+                            stats.won++;
+                        }
+                    } else {
+                        stats.active++;
+                    }
+                }
+            }
+        }
+        return stats;
+    }
+
+    // Broadcast generico (opzionale, usato per messaggi sistema)
     public void broadcastGameUpdate(String message) {
         ServerResponse resp = new ServerResponse();
-        resp.status = "EVENT"; // Status speciale per eventi
+        resp.status = "EVENT"; 
         resp.message = message;
-        // Se la partita è finita, potresti mettere qui resp.isFinished = true
         
         String json = new Gson().toJson(resp);
         ByteBuffer buffer = ByteBuffer.wrap(json.getBytes());
@@ -158,16 +238,12 @@ public class ServerMain {
         for (SocketChannel client : connectedClients) {
             if (client.isOpen()) {
                 try {
-                    // Duplichiamo il buffer per ogni client (NIO requirement)
                     client.write(buffer.duplicate());
-                } catch (IOException e) {
-                    // Ignora errori di scrittura su broadcast
-                }
+                } catch (IOException e) {}
             }
         }
     }
     
-    // Helper per rimuovere client dalla lista
     public void removeClient(SocketChannel client) {
         connectedClients.remove(client);
         try { client.close(); } catch (IOException e) {}
@@ -184,15 +260,10 @@ public class ServerMain {
         SocketChannel client = serverChannel.accept();
         client.configureBlocking(false);
         System.out.println("Nuovo client: " + client.getRemoteAddress());
-        
-        // AGGIUNTO ALLA LISTA BROADCAST
         connectedClients.add(client);
-        
         ClientSession session = new ClientSession();
         client.register(selector, SelectionKey.OP_READ, session);
     }
-    
-    // ... startConsoleListener, closeServer, getTimeLeft ... (copiali dalla versione precedente o lascia invariati)
     
     public int getTimeLeft() {
         long elapsed = (System.currentTimeMillis() - gameStartTime) / 1000;
@@ -205,7 +276,9 @@ public class ServerMain {
             try (Scanner scanner = new Scanner(System.in)) {
                 while (running) {
                     if (scanner.hasNextLine() && "exit".equalsIgnoreCase(scanner.nextLine().trim())) {
-                        running = false; selector.wakeup(); break;
+                        running = false; 
+                        if (selector != null) selector.wakeup(); 
+                        break;
                     }
                 }
             } catch (Exception e) {}

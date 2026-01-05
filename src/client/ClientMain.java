@@ -104,6 +104,11 @@ public class ClientMain {
                         req.operation = "requestLeaderboard";
                         send(req);
                     }
+                    else if ("game_stats".equalsIgnoreCase(cmd)) {
+                        req.operation = "requestGameStats";
+                        // req.gameId nullo implica partita corrente
+                        send(req);
+                    }
                     else {
                         System.out.println("Comando non valido o argomenti errati.");
                     }
@@ -157,8 +162,8 @@ public class ClientMain {
                             // 1. Risposta al LOGIN (gameInfo)
                             if (resp.gameInfo != null) {
                                 System.out.println("--- BENVENUTO IN PARTITA ---");
-                                System.out.println("Parole: " + resp.gameInfo.words);
-                                System.out.println("Errori: " + resp.gameInfo.mistakes);
+                                printGrid(resp.gameInfo.words);                          
+                                System.out.println("Errori commessi: " + resp.gameInfo.mistakes);
                             }
 
                             // 2. Risposta a SUBMIT (isCorrect)
@@ -175,8 +180,14 @@ public class ClientMain {
                             if (resp.wordsToGroup != null) {
                                 System.out.println("--- STATO PARTITA ---");
                                 System.out.println("Tempo rimasto: " + resp.timeLeft + "s");
+   
+                                // Se la partita non è finita, mostra la griglia
+                                if (!Boolean.TRUE.equals(resp.isFinished)) {
+                                     System.out.println("Parole da trovare:");
+                                     printGrid(resp.wordsToGroup); // <-- AGGIUNGI
+                                }
+                                
                                 System.out.println("Punteggio: " + resp.currentScore + " | Errori commessi: " + resp.mistakes);
-                                System.out.println("Parole da trovare: " + resp.wordsToGroup);
                                 if (resp.correctGroups != null && !resp.correctGroups.isEmpty()) {
                                     System.out.println("Gruppi trovati:");
                                     for (ServerResponse.GroupData g : resp.correctGroups) {
@@ -214,6 +225,16 @@ public class ClientMain {
                                 System.out.println("La tua posizione: #" + resp.yourPosition);
                             }
 
+                            // 6. Risposta a GAME STATS
+                            if (resp.playersActive != null) {
+                                System.out.println("--- STATISTICHE PARTITA CORRENTE ---");
+                                System.out.println("ID Partita: " + resp.gameId);
+                                System.out.println("Giocatori attivi: " + resp.playersActive);
+                                System.out.println("Giocatori terminati: " + resp.playersFinished);
+                                System.out.println("Vittorie: " + resp.playersWon);
+                                System.out.println("Tempo rimasto: " + resp.timeLeft);
+                            }
+
                         } catch (Exception e) {
                              System.out.println("\n[RAW MSG]: " + json);
                         }
@@ -224,5 +245,30 @@ public class ClientMain {
                 }
             } catch (Exception e) {}
         }
+    }
+
+    private static void printGrid(java.util.List<String> words) {
+        if (words == null || words.isEmpty()) return;
+
+        // 1. Trova la lunghezza massima tra tutte le parole per il padding
+        int maxLen = 0;
+        for (String w : words) {
+            if (w.length() > maxLen) maxLen = w.length();
+        }
+
+        System.out.println(); // Riga vuota per spaziatura
+
+        // 2. Stampa la griglia
+        for (int i = 0; i < words.size(); i++) {
+            // %-Ns formatta la stringa allineata a sinistra con padding fino a N caratteri
+            // Aggiungiamo un " " manuale dopo per staccare le colonne di esattamente 1 spazio minimo
+            System.out.printf("%-" + maxLen + "s ", words.get(i));
+
+            // Vai a capo ogni 4 parole
+            if ((i + 1) % 4 == 0) {
+                System.out.println();
+            }
+        }
+        System.out.println();
     }
 }

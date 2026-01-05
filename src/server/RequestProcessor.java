@@ -14,10 +14,7 @@ public class RequestProcessor {
 
     public static String process(String jsonText, ClientSession session, ServerMain server) {
         try {
-            // Parsing della richiesta nella classe DTO
             ClientRequest req = gson.fromJson(jsonText, ClientRequest.class);
-            
-            // Fix per evitare NullPointerException se il JSON è vuoto o malformato
             if (req == null || req.operation == null) return error("Manca operation", 400);
 
             switch (req.operation) {
@@ -31,7 +28,7 @@ public class RequestProcessor {
                 case "updateCredentials": {
                     boolean ok = UserManager.getInstance().updateCredentials(req.oldName, req.newName, req.oldPsw, req.newPsw);
                     if (ok) return success("Credenziali aggiornate", null);
-                    else return error("Errore aggiornamento (password errata o user esistente)", 403);
+                    else return error("Errore aggiornamento", 403);
                 }
 
                 case "login": {
@@ -40,11 +37,9 @@ public class RequestProcessor {
                         session.setUsername(req.username);
                         session.setLoggedIn(true);
                         
-                        // Costruzione GameInfo per la risposta
                         ServerResponse resp = new ServerResponse();
                         resp.status = "OK";
                         resp.message = "Login effettuato";
-                        // Passiamo il server per calcolare il tempo
                         resp.gameInfo = buildGameInfo(server.getCurrentGame(), session, server);
                         return gson.toJson(resp);
                     }
@@ -55,6 +50,7 @@ public class RequestProcessor {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
                     session.setLoggedIn(false);
                     session.setUsername(null);
+                    session.resetGameStatus(); 
                     return success("Logout effettuato", null);
                 }
 
@@ -62,10 +58,8 @@ public class RequestProcessor {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
                     if (req.words == null || req.words.size() != 4) return error("Servono 4 parole", 400);
                     
-                    // Controllo se il tempo è scaduto PRIMA di elaborare
-                    if (server.getTimeLeft() <= 0) {
-                         return error("Tempo scaduto per questa partita!", 408);
-                    }
+                    if (server.getTimeLeft() <= 0) return error("Tempo scaduto", 408);
+                    if (session.isGameFinished()) return error("Hai già terminato la partita", 409);
 
                     return processProposal(req.words, session, server.getCurrentGame());
                 }
@@ -75,6 +69,27 @@ public class RequestProcessor {
                     return getGameInfoResponse(server.getCurrentGame(), session, server);
                 }
                 
+                case "requestGameStats": {
+                    if (!session.isLoggedIn()) return error("Non loggato", 401);
+                    int gId = (req.gameId != null) ? req.gameId : (server.getCurrentGame() != null ? server.getCurrentGame().getGameId() : -1);
+                    
+                    if (server.getCurrentGame() == null || server.getCurrentGame().getGameId() != gId) {
+                         return error("Partita non trovata o non attiva", 404);
+                    }
+
+                    ServerResponse resp = new ServerResponse();
+                    resp.status = "OK";
+                    resp.gameId = gId;
+                    
+                    ServerMain.GameStats stats = server.calculateCurrentGameStats();
+                    resp.playersActive = stats.active;
+                    resp.playersFinished = stats.finished;
+                    resp.playersWon = stats.won;
+                    resp.timeLeft = server.getTimeLeft();
+                    
+                    return gson.toJson(resp);
+                }
+
                 case "requestPlayerStats": {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
                     UserStats stats = UserManager.getInstance().getUserStats(session.getUsername());
@@ -90,20 +105,17 @@ public class RequestProcessor {
                     if (stats.puzzlesPlayed > 0) {
                         resp.winRate = (float)stats.puzzlesWon / stats.puzzlesPlayed * 100;
                         resp.lossRate = 100.0f - resp.winRate;
-                    } else {
-                        resp.winRate = 0f; resp.lossRate = 0f;
-                    }
+                    } else { resp.winRate = 0f; resp.lossRate = 0f; }
                     return gson.toJson(resp);
                 }
-                
+
                 case "requestLeaderboard": {
                     if (!session.isLoggedIn()) return error("Non loggato", 401);
                     ServerResponse resp = new ServerResponse();
                     resp.status = "OK";
                     resp.rankings = UserManager.getInstance().getLeaderboard();
-                    // Calcolo posizione utente corrente
                     for (int i = 0; i < resp.rankings.size(); i++) {
-                        resp.rankings.get(i).position = i + 1; // Assegna posizioni
+                        resp.rankings.get(i).position = i + 1;
                         if (resp.rankings.get(i).username.equals(session.getUsername())) {
                             resp.yourPosition = i + 1;
                         }
@@ -112,7 +124,7 @@ public class RequestProcessor {
                 }
 
                 default:
-                    return error("Operazione non supportata: " + req.operation, 404);
+                    return error("Operazione non supportata", 404);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -120,21 +132,96 @@ public class RequestProcessor {
         }
     }
 
-    // --- HELPER LOGIC ---
+    // --- HELPER METHODS ---
 
-    private static ServerResponse.GameInfo buildGameInfo(Game g, ClientSession session, ServerMain server) {
+    private static String processProposal(List<String> userWords, ClientSession session, Game game) {
+        // Normalizza
+        List<String> normalizedProposal = userWords.stream().map(String::toUpperCase).collect(Collectors.toList());
+        List<String> allGameWords = new ArrayList<>();
+        for(Group g : game.getGroups()) allGameWords.addAll(g.getWords());
+        
+        // Validazione (Nessuna penalità per parole non esistenti/malformate [cite: 126])
+        if (!allGameWords.containsAll(normalizedProposal)) {
+            return error("Proposta non valida: contiene parole non presenti nella partita.", 410);
+        }
+        
+        for (String theme : session.getGuessedThemes()) {
+            for(Group g : game.getGroups()) {
+                if(g.getTheme().equals(theme)) {
+                    for(String w : normalizedProposal) {
+                        if(g.getWords().contains(w)) return error("Parola già usata in un gruppo corretto.", 411);
+                    }
+                }
+            }
+        }
+        
+        // Controllo Semantico
+        ServerResponse resp = new ServerResponse();
+        resp.status = "OK";
+        
+        boolean found = false;
+        for (Group group : game.getGroups()) {
+            if (session.isThemeGuessed(group.getTheme())) continue;
+            
+            if (group.getWords().containsAll(normalizedProposal) && normalizedProposal.containsAll(group.getWords())) {
+                session.addGuessedTheme(group.getTheme());
+                resp.isCorrect = true;
+                resp.groupTitle = group.getTheme();
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+             resp.message = "Gruppo Trovato!";
+             
+             // --- REGOLA: 3 Gruppi = Vittoria (l'ultimo è implicito)  ---
+             if (session.getScore() == 3) {
+                 // Trova e aggiungi il 4° gruppo mancante
+                 for (Group g : game.getGroups()) {
+                     if (!session.isThemeGuessed(g.getTheme())) {
+                         session.addGuessedTheme(g.getTheme()); 
+                         break;
+                     }
+                 }
+
+                 // Vittoria!
+                 UserManager.getInstance().updateStatsWin(session.getUsername(), session.getErrors());
+                 session.setGameFinished(true);
+                 resp.message = "VITTORIA!";
+                 resp.isFinished = true; // Invia stato finito così il client può mostrare tutto
+             }
+        } else {
+             // Errore: Penalità [cite: 20]
+             session.incrementErrors();
+             resp.isCorrect = false;
+             resp.message = "Sbagliato.";
+             
+             // Sconfitta per max errori [cite: 10]
+             if (session.getErrors() >= ServerMain.maxErrors) {
+                 UserManager.getInstance().updateStatsLoss(session.getUsername());
+                 session.setGameFinished(true);
+                 resp.message = "HAI PERSO (Troppi errori)";
+                 resp.isFinished = true;
+             }
+        }
+        
+        resp.currentMistakes = session.getErrors();
+        resp.currentScore = session.getScore();
+        return gson.toJson(resp);
+    }
+
+    // Costruzione GameInfo per il client (Public per uso in ServerMain)
+    public static ServerResponse.GameInfo buildGameInfo(Game g, ClientSession session, ServerMain server) {
         ServerResponse.GameInfo info = new ServerResponse.GameInfo();
-        if (g == null) return info; // Evita crash se server appena partito
+        if (g == null) return info;
 
         info.gameId = g.getGameId();
         info.mistakes = session.getErrors();
         info.currentScore = session.getScore(); 
-        
-        // Calcolo tempo reale
         info.timeLeft = server.getTimeLeft();
 
         List<String> visibleWords = new ArrayList<>();
-        // Mostra solo parole di gruppi NON indovinati
         for (Group group : g.getGroups()) {
             if (!session.isThemeGuessed(group.getTheme())) {
                 visibleWords.addAll(group.getWords());
@@ -142,10 +229,6 @@ public class RequestProcessor {
         }
         Collections.shuffle(visibleWords);
         info.words = visibleWords;
-        
-        // Popola alreadyGuessed (List<List<String>>) se necessario, qui semplificato
-        info.alreadyGuessed = new ArrayList<>(); 
-        
         return info;
     }
 
@@ -154,16 +237,11 @@ public class RequestProcessor {
 
         ServerResponse resp = new ServerResponse();
         resp.status = "OK";
-        resp.gameId = g.getGameId(); // Assicurati che ServerResponse abbia questo campo!
+        resp.gameId = g.getGameId();
+        resp.timeLeft = server.getTimeLeft();
         
-        int timeLeft = server.getTimeLeft();
-        resp.timeLeft = timeLeft;
-        
-        // La partita è finita se il tempo è scaduto
-        // OPPURE se l'utente ha vinto (4 gruppi) 
-        // OPPURE se l'utente ha perso (max errori)
-        boolean userFinished = (session.getScore() == 4) || (session.getErrors() >= ServerMain.maxErrors);
-        resp.isFinished = (timeLeft <= 0) || userFinished;
+        boolean userFinished = session.isGameFinished();
+        resp.isFinished = (resp.timeLeft <= 0) || userFinished;
         
         resp.mistakes = session.getErrors();
         resp.currentScore = session.getScore();
@@ -179,79 +257,21 @@ public class RequestProcessor {
             }
         }
         Collections.shuffle(words);
-        resp.wordsToGroup = words; // Parole rimaste da raggruppare
+        resp.wordsToGroup = words; 
         
-        // Se la partita è finita (per tempo o per l'utente), invia la SOLUZIONE completa
         if (resp.isFinished) {
             resp.solution = new ArrayList<>();
             for (Group gr : g.getGroups()) {
                 resp.solution.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
             }
         }
-        
         return gson.toJson(resp);
-    }
-
-    private static String processProposal(List<String> userWords, ClientSession session, Game game) {
-        ServerResponse resp = new ServerResponse();
-        resp.status = "OK";
-        
-        List<String> normalized = userWords.stream().map(String::toUpperCase).collect(Collectors.toList());
-        
-        boolean found = false;
-        for (Group group : game.getGroups()) {
-            if (session.isThemeGuessed(group.getTheme())) continue;
-            
-            // Check se le parole coincidono (indipendentemente dall'ordine)
-            if (group.getWords().containsAll(normalized) && normalized.containsAll(group.getWords())) {
-                session.addGuessedTheme(group.getTheme());
-                resp.isCorrect = true;
-                resp.groupTitle = group.getTheme();
-                
-                // VITTORIA
-                if (session.getScore() == 4) {
-                    UserManager.getInstance().updateStatsWin(session.getUsername(), session.getErrors());
-                    resp.message = "VITTORIA!";
-                }
-                found = true;
-                break;
-            }
-        }
-
-        if (found) {
-             // ...
-             if (session.getScore() == 4) {
-                 UserManager.getInstance().updateStatsWin(session.getUsername(), session.getErrors());
-                 session.setGameFinished(true); // <--- NUOVO
-                 resp.message = "VITTORIA!";
-             }
-             // ...
-        } else {
-             // ...
-             if (session.getErrors() >= ServerMain.maxErrors) {
-                 UserManager.getInstance().updateStatsLoss(session.getUsername());
-                 session.setGameFinished(true); // <--- NUOVO
-                 resp.message = "HAI PERSO";
-             }
-        }
-        
-        resp.currentMistakes = session.getErrors();
-        resp.currentScore = session.getScore();
-        return gson.toJson(resp);
-    }
-
-    private static String success(String msg, Object data) {
-        ServerResponse r = new ServerResponse();
-        r.status = "OK";
-        r.message = msg;
-        return gson.toJson(r);
     }
     
+    private static String success(String msg, Object data) {
+        ServerResponse r = new ServerResponse(); r.status = "OK"; r.message = msg; return gson.toJson(r);
+    }
     private static String error(String msg, int code) {
-        ServerResponse r = new ServerResponse();
-        r.status = "ERROR";
-        r.message = msg;
-        r.errorCode = code;
-        return gson.toJson(r);
+        ServerResponse r = new ServerResponse(); r.status = "ERROR"; r.message = msg; r.errorCode = code; return gson.toJson(r);
     }
 }

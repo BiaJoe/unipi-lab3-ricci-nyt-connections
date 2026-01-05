@@ -1,0 +1,43 @@
+[
+  {
+    "gameId": 9999,
+    "groups": [
+      {
+        "theme": "NUMERI 0-3",
+        "words": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      {
+        "theme": "NUMERI 4-7",
+        "words": [
+          "4",
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      {
+        "theme": "NUMERI 8-B",
+        "words": [
+          "8",
+          "9",
+          "A",
+          "B"
+        ]
+      },
+      {
+        "theme": "LETTERE C-F",
+        "words": [
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
+      }
+    ]
+  }
+]

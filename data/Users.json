@@ -1,14 +1,14 @@
 {
-  "L": {
-    "username": "L",
-    "password": "M",
+  "1": {
+    "username": "1",
+    "password": "2",
     "stats": {
-      "puzzlesPlayed": 0,
-      "puzzlesWon": 0,
-      "currentStreak": 0,
-      "maxStreak": 0,
+      "puzzlesPlayed": 1,
+      "puzzlesWon": 1,
+      "currentStreak": 1,
+      "maxStreak": 1,
       "winDistribution": [
-        0,
+        1,
         0,
         0,
         0
