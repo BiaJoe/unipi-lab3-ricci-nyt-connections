@@ -18,12 +18,10 @@ public class ClientHandler {
         try {
             bytesRead = client.read(buffer);
         } catch (IOException e) {
-            // Disconnessione improvvisa (Connection reset)
             server.disconnectClient(key);
             return;
         }
 
-        // -1 indica che il client ha chiuso la connessione in modo ordinato (EOF)
         if (bytesRead == -1) {
             server.disconnectClient(key);
             return;
@@ -34,30 +32,35 @@ public class ClientHandler {
             byte[] data = new byte[buffer.remaining()];
             buffer.get(data);
             
-            // 1. Accumulo i dati nel buffer della sessione (gestisce frammentazione TCP)
+            // 1. Accumula i dati nel buffer della sessione
             session.getBuffer().append(new String(data));
             
-            String fullMessage = session.getBuffer().toString().trim();
-
-            // 2. Controllo basilare fine messaggio JSON
-            if (fullMessage.endsWith("}")) { 
-                System.out.println("[RECV] " + client.socket().getInetAddress() + ": " + fullMessage);
+            // 2. Processa TUTTI i messaggi completi (che terminano con \n)
+            while (true) {
+                String currentBuffer = session.getBuffer().toString();
+                int newlineIndex = currentBuffer.indexOf('\n');
                 
-                // 3. Elaborazione comando
-                String response = RequestProcessor.process(fullMessage, session, server);
-                
-                // 4. Invio risposta (se prevista)
-                if (response != null) {
-                    try {
-                        client.write(ByteBuffer.wrap(response.getBytes()));
-                    } catch (IOException e) {
-                        server.disconnectClient(key);
-                        return;
-                    }
+                if (newlineIndex == -1) {
+                    break; // Nessun messaggio completo, aspetto altri dati
                 }
                 
-                // 5. Reset del buffer per il prossimo comando
-                session.getBuffer().setLength(0);
+                // Estrai il messaggio (senza il \n)
+                String message = currentBuffer.substring(0, newlineIndex).trim();
+                
+                // Rimuovi il messaggio processato dal buffer
+                session.getBuffer().delete(0, newlineIndex + 1);
+                
+                if (!message.isEmpty()) {
+                    System.out.println("[RECV] " + client.socket().getInetAddress() + ": " + message);
+                    
+                    String response = RequestProcessor.process(message, session, server);
+                    
+                    if (response != null) {
+                        // Importante: le risposte devono essere inviate tramite ServerMain.sendJson
+                        // che ora aggiungerà il \n (vedi modifica successiva)
+                        server.sendResponse(key, response);
+                    }
+                }
             }
         }
     }

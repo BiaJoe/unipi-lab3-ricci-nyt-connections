@@ -1,5 +1,6 @@
 package server.models;
 
+import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,14 +9,16 @@ public class ClientSession {
     private boolean isLoggedIn;
     private StringBuilder buffer;
     
+    // --- NUOVI CAMPI PER UDP ---
+    private InetAddress clientAddress; // IP del client
+    private int udpPort;             // Porta UDP del client
+
     // Manteniamo questi campi per comodità di accesso rapido durante la connessione attiva,
     // ma verranno sincronizzati col GameManager.
     private Set<String> guessedThemes;
     private int errors;
     private boolean gameFinished;
     
-    // Rimosso shuffledWords (ora è nel GameManager)
-
     public ClientSession() {
         this.buffer = new StringBuilder();
         resetGameStatus();
@@ -27,12 +30,18 @@ public class ClientSession {
         this.gameFinished = false;
     }
 
-    // Metodo per "caricare" i dati dal salvataggio del GameManager dentro la sessione attiva
     public void restoreFromState(PlayerGameState state) {
         this.guessedThemes = new HashSet<>(state.getGuessedThemes());
         this.errors = state.getErrors();
         this.gameFinished = state.isFinished();
     }
+
+    // --- GETTER & SETTER ---
+    public InetAddress getClientAddress() { return clientAddress; }
+    public void setClientAddress(InetAddress clientAddress) { this.clientAddress = clientAddress; }
+
+    public int getUdpPort() { return udpPort; }
+    public void setUdpPort(int udpPort) { this.udpPort = udpPort; }
 
     public int getScore() { return guessedThemes.size(); }
     public void incrementErrors() { this.errors++; }

@@ -30,11 +30,15 @@ public class AuthHandler {
             session.setUsername(req.username);
             session.setLoggedIn(true);
             
+            // --- CATTURA PORTA UDP ---
+            // Il client DEVE inviare questo campo nel JSON di login
+            if (req.udpPort > 0) {
+                session.setUdpPort(req.udpPort);
+            }
+            
             Game current = GameManager.getInstance().getCurrentGame();
             if (current != null) {
-                // IL SERVER RICORDA IL GIOCO DELL'UTENTE
                 PlayerGameState savedState = GameManager.getInstance().getOrCreatePlayerState(req.username);
-                // Carichiamo lo stato nella sessione attiva del socket
                 session.restoreFromState(savedState);
             }
             
@@ -51,6 +55,8 @@ public class AuthHandler {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
         session.setLoggedIn(false);
         session.setUsername(null);
+        // Resetta anche info UDP per sicurezza
+        session.setUdpPort(0);
         session.resetGameStatus(); 
         return ResponseUtils.success("Logout effettuato");
     }

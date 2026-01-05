@@ -3,12 +3,12 @@
     "username": "A",
     "password": "B",
     "stats": {
-      "puzzlesPlayed": 1,
-      "puzzlesWon": 0,
+      "puzzlesPlayed": 5,
+      "puzzlesWon": 1,
       "currentStreak": 0,
-      "maxStreak": 0,
+      "maxStreak": 1,
       "winDistribution": [
-        0,
+        1,
         0,
         0,
         0
@@ -19,13 +19,13 @@
     "username": "B",
     "password": "M",
     "stats": {
-      "puzzlesPlayed": 8,
-      "puzzlesWon": 2,
-      "currentStreak": 0,
-      "maxStreak": 1,
+      "puzzlesPlayed": 24,
+      "puzzlesWon": 7,
+      "currentStreak": 2,
+      "maxStreak": 3,
       "winDistribution": [
-        0,
-        1,
+        4,
+        2,
         1,
         0
       ]

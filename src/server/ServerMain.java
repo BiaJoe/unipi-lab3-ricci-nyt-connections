@@ -2,6 +2,8 @@ package server;
 
 import server.models.ClientSession;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
@@ -15,19 +17,16 @@ import java.util.function.BiFunction;
 public class ServerMain {
     private Selector selector;
     private volatile boolean running = true;
-    
-    // Rimosso currentGame e timer -> Ora sono in GameManager
     private GameScheduler gameScheduler;
+    private DatagramSocket udpSocket;
 
     public static void main(String[] args) {
         try {
             ServerConfig.load("server.properties");
             UserManager.getInstance(); 
-            // Inizializza il GameManager
             GameManager.getInstance(); 
             new ServerMain().start();
         } catch (IOException e) {
-            System.err.println("Errore avvio server: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -39,20 +38,20 @@ public class ServerMain {
 
         selector = Selector.open();
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        
+        try { udpSocket = new DatagramSocket(); } catch (Exception e) {}
 
-        System.out.println("Server avviato sulla porta " + ServerConfig.PORT);
+        System.out.println("Server TCP avviato sulla porta " + ServerConfig.PORT);
+        System.out.println("Sistema notifiche UDP pronto.");
 
-        // Avvio Thread Gioco
         gameScheduler = new GameScheduler(this);
         new Thread(gameScheduler).start();
 
         startConsoleListener();
 
-        // --- NETWORK LOOP ---
         while (running) {
             selector.select();
             if (!running) break;
-            
             Set<SelectionKey> selectedKeys = selector.selectedKeys();
             Iterator<SelectionKey> iter = selectedKeys.iterator();
 
@@ -60,7 +59,6 @@ public class ServerMain {
                 SelectionKey key = iter.next();
                 iter.remove();
                 if (!key.isValid()) continue;
-                
                 try {
                     if (key.isAcceptable()) acceptConnection(serverChannel);
                     else if (key.isReadable()) ClientHandler.handleRead(key, this);
@@ -71,8 +69,19 @@ public class ServerMain {
         }
         closeServer();
     }
-
-    // --- METODI DI RETE ---
+    
+    public void sendUdpBroadcast(String jsonMessage) {
+        if (udpSocket == null || udpSocket.isClosed()) return;
+        byte[] data = jsonMessage.getBytes();
+        for (ClientSession session : getAllSessions()) {
+            if (session.isLoggedIn() && session.getUdpPort() > 0 && session.getClientAddress() != null) {
+                try {
+                    DatagramPacket packet = new DatagramPacket(data, data.length, session.getClientAddress(), session.getUdpPort());
+                    udpSocket.send(packet);
+                } catch (IOException e) {}
+            }
+        }
+    }
 
     public void broadcast(BiFunction<ClientSession, SelectionKey, String> msgGenerator) {
         if (selector == null) return;
@@ -80,16 +89,26 @@ public class ServerMain {
             if (key.isValid() && key.attachment() instanceof ClientSession) {
                 ClientSession session = (ClientSession) key.attachment();
                 String json = msgGenerator.apply(session, key);
-                if (json != null) sendJson(key, json);
+                if (json != null) sendResponse(key, json);
             }
         }
     }
     
-    // Metodo per permettere al GameManager di calcolare le stats
+    // --- IL METODO CHE MANCAVA ---
+    public void sendResponse(SelectionKey key, String json) {
+        if (key == null || !key.isValid()) return;
+        try { 
+            // AGGIUNGO IL \n PER IL PROTOCOLLO
+            String messageWithTerminator = json + "\n";
+            ((SocketChannel)key.channel()).write(ByteBuffer.wrap(messageWithTerminator.getBytes())); 
+        } catch (IOException e) {
+            disconnectClient(key);
+        }
+    }
+
     public List<ClientSession> getAllSessions() {
         List<ClientSession> sessions = new ArrayList<>();
         if (selector == null) return sessions;
-        
         for (SelectionKey key : selector.keys()) {
             if (key.isValid() && key.attachment() instanceof ClientSession) {
                 sessions.add((ClientSession) key.attachment());
@@ -102,7 +121,9 @@ public class ServerMain {
         SocketChannel client = serverChannel.accept();
         client.configureBlocking(false);
         System.out.println("Nuovo client: " + client.getRemoteAddress());
-        client.register(selector, SelectionKey.OP_READ, new ClientSession());
+        ClientSession session = new ClientSession();
+        session.setClientAddress(client.socket().getInetAddress());
+        client.register(selector, SelectionKey.OP_READ, session);
     }
 
     public void disconnectClient(SelectionKey key) {
@@ -111,33 +132,19 @@ public class ServerMain {
         System.out.println("Client disconnesso.");
     }
     
-    private void sendJson(SelectionKey key, String json) {
-        try { ((SocketChannel)key.channel()).write(ByteBuffer.wrap(json.getBytes())); } catch (IOException e) {}
-    }
-
     private void startConsoleListener() {
         new Thread(() -> {
-            // FIX: Try-with-resources per chiudere lo scanner
             try (Scanner s = new Scanner(System.in)) {
                 while (running) {
-                    // hasNextLine blocca finché non c'è input
-                    if (s.hasNextLine()) {
-                        String line = s.nextLine().trim();
-                        if ("exit".equalsIgnoreCase(line)) {
-                            running = false;
-                            gameScheduler.stop();
-                            if (selector != null) selector.wakeup(); // Sblocca la select()
-                            break;
-                        }
+                    if (s.hasNextLine() && "exit".equalsIgnoreCase(s.nextLine().trim())) {
+                        running = false; gameScheduler.stop(); if (selector != null) selector.wakeup(); break;
                     }
                 }
-            } catch (Exception e) {
-                // Ignora errori chiusura scanner
-            }
+            } catch (Exception e) {}
         }).start();
     }
 
     private void closeServer() {
-        try { if (selector != null) selector.close(); System.exit(0); } catch (IOException e) {}
+        try { if (selector != null) selector.close(); if (udpSocket != null) udpSocket.close(); System.exit(0); } catch (IOException e) {}
     }
 }

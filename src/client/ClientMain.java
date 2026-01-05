@@ -7,6 +7,8 @@ import utils.ServerResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -21,18 +23,24 @@ public class ClientMain {
     public static int serverPort;
 
     private static SocketChannel clientChannel;
+    private static DatagramSocket udpSocket;
+    private static int localUdpPort;
     private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
         try {
             readConfig();
+            udpSocket = new DatagramSocket();
+            localUdpPort = udpSocket.getLocalPort();
+            
             clientChannel = SocketChannel.open();
             clientChannel.connect(new InetSocketAddress(serverAddress, serverPort));
 
             System.out.println("--- CLIENT CONNESSO ---");
-            ClientView.printHelp(); // USA IL NUOVO HELP
+            ClientView.printHelp();
 
-            new Thread(new ServerListener()).start();
+            new Thread(new TcpListener()).start();
+            new Thread(new UdpListener()).start();
 
             try (Scanner scanner = new Scanner(System.in)) {
                 while (true) {
@@ -40,12 +48,13 @@ public class ClientMain {
                     if (!scanner.hasNextLine()) break;
                     String line = scanner.nextLine();
                     if (line.trim().isEmpty()) continue;
-                    
                     if (!handleCommand(line)) break; 
                 }
             } 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+             try { if (udpSocket != null) udpSocket.close(); } catch(Exception e){}
         }
     }
 
@@ -61,6 +70,7 @@ public class ClientMain {
         } 
         else if ("login".equalsIgnoreCase(cmd) && parts.length == 3) {
             req.operation = "login"; req.username = parts[1]; req.psw = parts[2];
+            req.udpPort = localUdpPort;
         }
         else if ("logout".equalsIgnoreCase(cmd)) {
             req.operation = "logout";
@@ -82,27 +92,71 @@ public class ClientMain {
             req.operation = "requestLeaderboard";
         }
         else {
-            System.out.println("Comando non valido (usa 'exit' per uscire o controlla gli argomenti).");
+            System.out.println("Comando non valido.");
             return true;
         }
-        
         send(req);
         return true;
     }
-
-    // --- GESTORE RISPOSTE SERVER ---
-    static class ServerListener implements Runnable {
+    
+    static class UdpListener implements Runnable {
         public void run() {
             try {
-                ByteBuffer buffer = ByteBuffer.allocate(8192);
-                while (clientChannel.isOpen()) {
-                    int read = clientChannel.read(buffer);
-                    if (read > 0) {
-                        buffer.flip();
-                        String json = new String(buffer.array(), 0, read);
-                        processResponse(json);
+                byte[] buf = new byte[4096];
+                while (!udpSocket.isClosed()) {
+                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                    udpSocket.receive(packet);
+                    String json = new String(packet.getData(), 0, packet.getLength());
+                    ServerResponse resp = gson.fromJson(json, ServerResponse.class);
+                    if ("EVENT".equals(resp.status)) {
+                        System.out.println("\n\n[NOTIFICA] " + resp.message);
+                        if (resp.message.contains("TEMPO SCADUTO") || resp.message.contains("NUOVA PARTITA")) {
+                             requestFullInfo();
+                        }
                         System.out.print("> ");
-                        buffer.clear();
+                    }
+                }
+            } catch (Exception e) {}
+        }
+        private void requestFullInfo() {
+            try {
+                ClientRequest req = new ClientRequest();
+                req.operation = "requestGameInfo"; req.gameId = 0;
+                send(req);
+            } catch (IOException e) {}
+        }
+    }
+
+    // --- LISTENER TCP AGGIORNATO (BUFFERING) ---
+    static class TcpListener implements Runnable {
+        private StringBuilder buffer = new StringBuilder();
+
+        public void run() {
+            try {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(8192);
+                while (clientChannel.isOpen()) {
+                    int read = clientChannel.read(byteBuffer);
+                    if (read > 0) {
+                        byteBuffer.flip();
+                        byte[] bytes = new byte[byteBuffer.remaining()];
+                        byteBuffer.get(bytes);
+                        
+                        // 1. Accumula
+                        buffer.append(new String(bytes));
+                        
+                        // 2. Processa righe
+                        while (true) {
+                            int newlineIndex = buffer.indexOf("\n");
+                            if (newlineIndex == -1) break;
+                            
+                            String json = buffer.substring(0, newlineIndex).trim();
+                            buffer.delete(0, newlineIndex + 1);
+                            
+                            if (!json.isEmpty()) processResponse(json);
+                        }
+                        
+                        System.out.print("> ");
+                        byteBuffer.clear();
                     }
                 }
             } catch (Exception e) {}
@@ -111,50 +165,23 @@ public class ClientMain {
         private void processResponse(String json) {
             try {
                 ServerResponse resp = gson.fromJson(json, ServerResponse.class);
+                if (resp.status != null && !"EVENT".equals(resp.status)) 
+                    ClientView.printMessage(resp.status, resp.message);
 
-                // 1. Messaggi Sistema / Errori
-                if (resp.status != null) ClientView.printMessage(resp.status, resp.message);
-
-                // 2. Nuova Partita
-                if (resp.message != null && resp.message.contains("NUOVA PARTITA")) {
-                    if (resp.gameInfo != null) ClientView.printNewGame(resp.gameInfo.words);
-                    else sendRequestInfo(); 
+                if (resp.gameInfo != null && resp.message != null && !resp.message.contains("TEMPO SCADUTO")) {
+                     if (resp.isCorrect == null) ClientView.printGameInfo(resp.gameInfo.words, resp.gameInfo.mistakes);
                 }
-
-                // 3. Info Partita (Login o Info)
-                if (resp.gameInfo != null && (resp.message == null || !resp.message.contains("NUOVA PARTITA"))) {
-                    // Se è un update post-submit, viene gestito nel punto 4, 
-                    // a meno che non sia una risposta esplicita a "info".
-                    // Evitiamo di stampare doppio se è già gestito da isCorrect
-                    if (resp.isCorrect == null) {
-                        ClientView.printGameInfo(resp.gameInfo.words, resp.gameInfo.mistakes);
-                    }
-                }
-
-                // 4. Risultato Submit (PUNTO 2)
                 if (resp.isCorrect != null) {
-                    // Estraiamo le parole rimanenti se il server ce le ha mandate in gameInfo
                     java.util.List<String> remaining = (resp.gameInfo != null) ? resp.gameInfo.words : null;
                     ClientView.printSubmissionResult(resp.isCorrect, resp.groupTitle, resp.currentScore, resp.currentMistakes, remaining);
                 }
-
-                // 5. Stato INFO completo
                 if (resp.wordsToGroup != null) {
                     ClientView.printGameStatus(resp.timeLeft, resp.currentScore, resp.mistakes, resp.wordsToGroup, Boolean.TRUE.equals(resp.isFinished), resp.correctGroups);
                 }
-                
-                // 6. Soluzione Finale (PUNTO 3)
                 if (Boolean.TRUE.equals(resp.isFinished) && resp.solution != null) {
-                    // Passiamo score ed errori attuali per il riepilogo
-                    ClientView.printSolution(resp.solution, "EVENT".equals(resp.status), resp.currentScore, resp.currentMistakes != 0 ? resp.currentMistakes : resp.mistakes);
+                    ClientView.printSolution(resp.solution, "EVENT".equals(resp.status) || "TEMPO SCADUTO".equals(resp.message), resp.currentScore, resp.currentMistakes);
                 }
-
-                // 7. Statistiche Personali
-                if (resp.puzzlesCompleted != null) {
-                    ClientView.printStats(resp.puzzlesCompleted, resp.puzzlesWon, resp.winRate, resp.currentStreak, resp.maxStreak, resp.mistakeHistogram);
-                }
-                
-                // 8. Classifica
+                if (resp.puzzlesCompleted != null) ClientView.printStats(resp.puzzlesCompleted, resp.puzzlesWon, resp.winRate, resp.currentStreak, resp.maxStreak, resp.mistakeHistogram);
                 if (resp.rankings != null) {
                     System.out.println("--- CLASSIFICA ---");
                     for (ServerResponse.RankingEntry r : resp.rankings) {
@@ -162,16 +189,7 @@ public class ClientMain {
                     }
                     System.out.println("La tua posizione: #" + resp.yourPosition);
                 }
-
-            } catch (Exception e) { /* Ignora JSON parziali */ }
-        }
-        
-        private void sendRequestInfo() {
-            try {
-                ClientRequest req = new ClientRequest();
-                req.operation = "requestGameInfo"; req.gameId = 0;
-                send(req);
-            } catch (IOException e) {}
+            } catch (Exception e) {}
         }
     }
 
@@ -185,6 +203,7 @@ public class ClientMain {
     }
 
     private static void send(ClientRequest req) throws IOException {
-        if (clientChannel.isOpen()) clientChannel.write(ByteBuffer.wrap(gson.toJson(req).getBytes()));
+        // AGGIUNTO \n ALLA FINE DEL MESSAGGIO
+        if (clientChannel.isOpen()) clientChannel.write(ByteBuffer.wrap((gson.toJson(req) + "\n").getBytes()));
     }
 }

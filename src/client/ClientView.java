@@ -124,6 +124,7 @@ public class ClientView {
     // --- NUOVO METODO TROFEO ---
     private static void printTrophy() {
         System.out.println("\n");
+        System.out.println("             ___________ ");
         System.out.println("            '._==_==_=_.'");
         System.out.println("            .-\\:      /-.");
         System.out.println("           | (|:.     |) |");
@@ -132,7 +133,7 @@ public class ClientView {
         System.out.println("               '::. .'");
         System.out.println("                 ) (");
         System.out.println("               _.' '._");
-        System.out.println("              `\"\"\"\"\"\"\"`");
+        System.out.println("              '\"\"\"\"\"\"\"'");
         System.out.println();
     }
 }
