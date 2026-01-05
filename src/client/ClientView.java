@@ -55,20 +55,26 @@ public class ClientView {
 
     public static void printSubmissionResult(boolean isCorrect, String groupTitle, int score, int mistakes, List<String> remainingWords) {
         if (isCorrect) {
-            System.out.println("✅ ESATTO! Gruppo trovato: " + groupTitle);
-            if (remainingWords != null && !remainingWords.isEmpty()) {
+            System.out.println("ESATTO! Gruppo trovato: " + groupTitle);
+            
+            // --- MODIFICA: SE HO VINTO (SCORE 4) MOSTRO IL TROFEO ---
+            if (score == 4) {
+                printTrophy();
+            } 
+            // Altrimenti mostro la griglia aggiornata coi buchi
+            else if (remainingWords != null && !remainingWords.isEmpty()) {
                 System.out.println("Griglia aggiornata:");
                 printGrid(remainingWords);
             }
         } else {
-            System.out.println("❌ SBAGLIATO.");
+            System.out.println("SBAGLIATO.");
         }
         System.out.println("Punteggio: " + score + " | Errori: " + mistakes);
     }
 
     public static void printSolution(List<ServerResponse.GroupData> solution, boolean timeOut, int finalScore, int finalMistakes) {
         System.out.println("\n==========================================");
-        System.out.println("⚠️ PARTITA TERMINATA" + (timeOut ? " (Tempo Scaduto)" : "") + " ⚠️");
+        System.out.println("PARTITA TERMINATA" + (timeOut ? " (Tempo Scaduto)" : ""));
         System.out.println("RISULTATO FINALE -> Punteggio: " + finalScore + " | Errori: " + finalMistakes);
         
         if (solution != null) {
@@ -88,38 +94,45 @@ public class ClientView {
         System.out.println("Distribuzione Errori: " + java.util.Arrays.toString(histogram));
     }
 
-    // --- LOGICA DI STAMPA GRIGLIA CON BUCHI ---
     public static void printGrid(List<String> words) {
         if (words == null || words.isEmpty()) return;
 
-        // 1. Calcola lunghezza massima basandosi SOLO sulle parole visibili
         int maxLen = 0;
         for (String w : words) {
             if (w != null && !w.isEmpty() && w.length() > maxLen) {
                 maxLen = w.length();
             }
         }
-        
-        // Fallback se tutte vuote (non dovrebbe succedere se non a fine partita)
         if (maxLen == 0) maxLen = 10; 
 
         System.out.println();
         for (int i = 0; i < words.size(); i++) {
             String w = words.get(i);
-            
-            // Se la parola è vuota (indovinata), stampa uno spazio vuoto grande quanto maxLen
-            // Altrimenti stampa la parola con padding
             if (w == null || w.isEmpty()) {
                 System.out.printf("%-" + maxLen + "s ", " "); 
             } else {
                 System.out.printf("%-" + maxLen + "s ", w);
             }
 
-            // A capo ogni 4
             if ((i + 1) % 4 == 0) {
                 System.out.println();
             }
         }
+        System.out.println();
+    }
+
+    // --- NUOVO METODO TROFEO ---
+    private static void printTrophy() {
+        System.out.println("\n");
+        System.out.println("            '._==_==_=_.'");
+        System.out.println("            .-\\:      /-.");
+        System.out.println("           | (|:.     |) |");
+        System.out.println("            '-|:.     |-'");
+        System.out.println("              \\::.    /");
+        System.out.println("               '::. .'");
+        System.out.println("                 ) (");
+        System.out.println("               _.' '._");
+        System.out.println("              `\"\"\"\"\"\"\"`");
         System.out.println();
     }
 }

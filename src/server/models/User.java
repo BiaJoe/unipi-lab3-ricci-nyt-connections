@@ -13,13 +13,8 @@ public class User {
 
     public String getUsername() { return username; }
     public String getPassword() { return password; }
-    public UserStats getStats() { return stats; }
+    public void setPassword(String password) { this.password = password; }
     
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setStats(UserStats stats) {
-        this.stats = stats;
-    }
+    public UserStats getStats() { return stats; }
+    public void setStats(UserStats stats) { this.stats = stats; }
 }

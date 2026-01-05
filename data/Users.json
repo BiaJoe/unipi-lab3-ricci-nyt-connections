@@ -1,9 +1,9 @@
 {
-  "B": {
-    "username": "B",
-    "password": "M",
+  "A": {
+    "username": "A",
+    "password": "B",
     "stats": {
-      "puzzlesPlayed": 0,
+      "puzzlesPlayed": 1,
       "puzzlesWon": 0,
       "currentStreak": 0,
       "maxStreak": 0,
@@ -11,6 +11,22 @@
         0,
         0,
         0,
+        0
+      ]
+    }
+  },
+  "B": {
+    "username": "B",
+    "password": "M",
+    "stats": {
+      "puzzlesPlayed": 8,
+      "puzzlesWon": 2,
+      "currentStreak": 0,
+      "maxStreak": 1,
+      "winDistribution": [
+        0,
+        1,
+        1,
         0
       ]
     }

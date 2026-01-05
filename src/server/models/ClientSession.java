@@ -1,7 +1,6 @@
 package server.models;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ClientSession {
@@ -9,13 +8,13 @@ public class ClientSession {
     private boolean isLoggedIn;
     private StringBuilder buffer;
     
-    // Stato Partita
+    // Manteniamo questi campi per comodità di accesso rapido durante la connessione attiva,
+    // ma verranno sincronizzati col GameManager.
     private Set<String> guessedThemes;
     private int errors;
     private boolean gameFinished;
     
-    // NUOVO: Ricorda l'ordine delle parole per questa sessione
-    private List<String> personalShuffledWords; 
+    // Rimosso shuffledWords (ora è nel GameManager)
 
     public ClientSession() {
         this.buffer = new StringBuilder();
@@ -26,7 +25,13 @@ public class ClientSession {
         this.guessedThemes = new HashSet<>();
         this.errors = 0;
         this.gameFinished = false;
-        this.personalShuffledWords = null; // Al reset, cancelliamo lo shuffle vecchio
+    }
+
+    // Metodo per "caricare" i dati dal salvataggio del GameManager dentro la sessione attiva
+    public void restoreFromState(PlayerGameState state) {
+        this.guessedThemes = new HashSet<>(state.getGuessedThemes());
+        this.errors = state.getErrors();
+        this.gameFinished = state.isFinished();
     }
 
     public int getScore() { return guessedThemes.size(); }
@@ -34,22 +39,13 @@ public class ClientSession {
     public void addGuessedTheme(String theme) { guessedThemes.add(theme); }
     public boolean isThemeGuessed(String theme) { return guessedThemes.contains(theme); }
 
-    // Getters & Setters
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
-    
     public boolean isLoggedIn() { return isLoggedIn; }
     public void setLoggedIn(boolean loggedIn) { isLoggedIn = loggedIn; }
-    
     public StringBuilder getBuffer() { return buffer; }
-    
     public Set<String> getGuessedThemes() { return guessedThemes; }
     public int getErrors() { return errors; }
-    
     public boolean isGameFinished() { return gameFinished; }
     public void setGameFinished(boolean gameFinished) { this.gameFinished = gameFinished; }
-
-    // NUOVI GETTER/SETTER per lo shuffle persistente
-    public List<String> getPersonalShuffledWords() { return personalShuffledWords; }
-    public void setPersonalShuffledWords(List<String> words) { this.personalShuffledWords = words; }
 }

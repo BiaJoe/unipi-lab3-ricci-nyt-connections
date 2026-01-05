@@ -1,56 +1,66 @@
+# --- VARIABILI ---
 JAVAC = javac
 JAVA = java
 JAR = jar
+
+# Directory
 SRC_DIR = src
 BIN_DIR = bin
 LIB_DIR = lib
 DATA_DIR = data
 
-# Assicurati che il nome del file corrisponda esattamente a quello in lib/
+# Librerie
+# Assicurati che il file esista in lib/
 GSON_JAR = $(LIB_DIR)/gson-2.11.0.jar
 
-# Trova TUTTI i file .java ricorsivamente in src/ (include server/models, client, utils, ecc.)
+# Trova tutti i file .java nelle sottocartelle (server, client, utils, handlers, models)
 SOURCES := $(shell find $(SRC_DIR) -name "*.java")
 
-# Default target
+# --- TARGET PRINCIPALI ---
+
 all: server_jar client_jar
 
-# 1. Compilazione
+# 1. Compilazione e Preparazione Fat JAR
+# Crea la cartella bin, compila tutto lì dentro e scompatta GSON per includerlo
 compile:
 	@mkdir -p $(BIN_DIR)
-	@echo "--- Compilazione in corso ---"
+	@echo "[COMPILE] Compilazione sorgenti..."
 	@$(JAVAC) -d $(BIN_DIR) -cp $(GSON_JAR) $(SOURCES)
-	@echo "--- Estrazione GSON nel pacchetto ---"
+	@echo "[LIB] Inclusione GSON nel pacchetto..."
 	@cd $(BIN_DIR) && $(JAR) xf ../$(GSON_JAR)
 
 # 2. Creazione JAR Server
+# Crea un jar unico con Entry Point ServerMain
 server_jar: compile
-	@echo "--- Creazione server.jar ---"
+	@echo "[JAR] Creazione server.jar..."
 	@$(JAR) cfe server.jar server.ServerMain -C $(BIN_DIR) .
 
 # 3. Creazione JAR Client
+# Crea un jar unico con Entry Point ClientMain
 client_jar: compile
-	@echo "--- Creazione client.jar ---"
+	@echo "[JAR] Creazione client.jar..."
 	@$(JAR) cfe client.jar client.ClientMain -C $(BIN_DIR) .
 
-# --- Comandi di Esecuzione Rapida ---
+# --- ESECUZIONE ---
+
 runs: server_jar
-	@echo "Avvio Server..."
+	@echo "[RUN] Avvio Server..."
 	@$(JAVA) -jar server.jar
 
 runc: client_jar
-	@echo "Avvio Client..."
+	@echo "[RUN] Avvio Client..."
 	@$(JAVA) -jar client.jar
 
-# --- Pulizia ---
+# --- PULIZIA ---
+
 clean:
+	@echo "[CLEAN] Rimozione file compilati..."
 	@rm -rf $(BIN_DIR)
 	@rm -f server.jar client.jar
-	@echo "Pulizia completata."
 
-# Reset Totale (inclusi utenti)
+# Reset Totale (cancella anche il database utenti)
 reset: clean
+	@echo "[RESET] Cancellazione Database Utenti..."
 	@rm -f $(DATA_DIR)/Users.json
-	@echo "Reset completato (Database utenti eliminato)."
 
 .PHONY: all compile server_jar client_jar runs runc clean reset

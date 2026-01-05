@@ -1,35 +1,37 @@
 package server;
 
-import server.models.ClientSession;
 import server.models.Game;
 import server.models.LiveStats;
+import server.models.PlayerGameState;
 
-import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GameManager {
     private static GameManager instance;
     
     private Game currentGame;
     private long gameStartTime;
+    
+    // MAPPA FONDAMENTALE: Username -> StatoPartita
+    // Resiste ai logout. Viene cancellata solo quando cambia il gioco.
+    private ConcurrentHashMap<String, PlayerGameState> activePlayers;
 
-    // Singleton
-    private GameManager() {}
+    private GameManager() {
+        activePlayers = new ConcurrentHashMap<>();
+    }
 
     public static synchronized GameManager getInstance() {
         if (instance == null) instance = new GameManager();
         return instance;
     }
 
-    // --- GESTIONE STATO PARTITA ---
-
     public synchronized void setCurrentGame(Game g) {
         this.currentGame = g;
+        this.activePlayers.clear(); // NUOVA PARTITA -> RESET TOTALE MEMORIA GIOCATORI
         this.resetGameTimer();
     }
 
-    public synchronized Game getCurrentGame() {
-        return currentGame;
-    }
+    public synchronized Game getCurrentGame() { return currentGame; }
 
     public synchronized void resetGameTimer() {
         this.gameStartTime = System.currentTimeMillis();
@@ -42,22 +44,26 @@ public class GameManager {
         return Math.max(0, remaining);
     }
 
+    // --- GESTIONE STATO GIOCATORI ---
+    
+    // Chiamato al LOGIN: recupera lo stato se esiste, altrimenti ne crea uno nuovo
+    public PlayerGameState getOrCreatePlayerState(String username) {
+        return activePlayers.computeIfAbsent(username, k -> new PlayerGameState());
+    }
+
     // --- CALCOLO STATISTICHE LIVE ---
-    // Richiede la lista delle sessioni attive (che gli passerà il ServerMain o chi ha il Selector)
-    public LiveStats calculateStats(Collection<ClientSession> sessions) {
+    // Ora calcoliamo le stats basandoci sulla mappa activePlayers (più accurato)
+    public LiveStats calculateStats() {
         LiveStats stats = new LiveStats();
         
-        for (ClientSession session : sessions) {
-            if (session.isLoggedIn()) {
-                if (session.isGameFinished()) {
-                    stats.finished++;
-                    // Logica vittoria: meno errori del massimo consentito
-                    if (session.getErrors() < ServerConfig.MAX_ERRORS) {
-                        stats.won++;
-                    }
-                } else {
-                    stats.active++;
+        for (PlayerGameState pState : activePlayers.values()) {
+            if (pState.isFinished()) {
+                stats.finished++;
+                if (pState.getErrors() < ServerConfig.MAX_ERRORS) {
+                    stats.won++;
                 }
+            } else {
+                stats.active++;
             }
         }
         return stats;
