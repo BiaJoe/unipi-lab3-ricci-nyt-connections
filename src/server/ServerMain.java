@@ -1,6 +1,8 @@
 package server;
 
+import server.handlers.ClientHandler; 
 import server.models.ClientSession;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 
 public class ServerMain {
@@ -19,6 +23,8 @@ public class ServerMain {
     private volatile boolean running = true;
     private GameScheduler gameScheduler;
     private DatagramSocket udpSocket;
+    
+    private ExecutorService workerPool = Executors.newCachedThreadPool();
 
     public static void main(String[] args) {
         try {
@@ -29,6 +35,10 @@ public class ServerMain {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public ExecutorService getWorkerPool() {
+        return workerPool;
     }
 
     public void start() throws IOException {
@@ -61,6 +71,7 @@ public class ServerMain {
                 if (!key.isValid()) continue;
                 try {
                     if (key.isAcceptable()) acceptConnection(serverChannel);
+                    // Ora ClientHandler è riconosciuto grazie all'import
                     else if (key.isReadable()) ClientHandler.handleRead(key, this);
                 } catch (IOException e) {
                     disconnectClient(key);
@@ -93,12 +104,10 @@ public class ServerMain {
             }
         }
     }
-    
-    // --- IL METODO CHE MANCAVA ---
+
     public void sendResponse(SelectionKey key, String json) {
         if (key == null || !key.isValid()) return;
         try { 
-            // AGGIUNGO IL \n PER IL PROTOCOLLO
             String messageWithTerminator = json + "\n";
             ((SocketChannel)key.channel()).write(ByteBuffer.wrap(messageWithTerminator.getBytes())); 
         } catch (IOException e) {
@@ -131,13 +140,16 @@ public class ServerMain {
         key.cancel();
         System.out.println("Client disconnesso.");
     }
-    
+
     private void startConsoleListener() {
         new Thread(() -> {
             try (Scanner s = new Scanner(System.in)) {
                 while (running) {
                     if (s.hasNextLine() && "exit".equalsIgnoreCase(s.nextLine().trim())) {
-                        running = false; gameScheduler.stop(); if (selector != null) selector.wakeup(); break;
+                        running = false; 
+                        gameScheduler.stop(); 
+                        if (selector != null) selector.wakeup(); 
+                        break;
                     }
                 }
             } catch (Exception e) {}
@@ -145,6 +157,11 @@ public class ServerMain {
     }
 
     private void closeServer() {
-        try { if (selector != null) selector.close(); if (udpSocket != null) udpSocket.close(); System.exit(0); } catch (IOException e) {}
+        try { 
+            if (selector != null) selector.close(); 
+            if (udpSocket != null) udpSocket.close(); 
+            if (workerPool != null) workerPool.shutdown();
+            System.exit(0); 
+        } catch (IOException e) {}
     }
 }

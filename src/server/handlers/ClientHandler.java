@@ -1,6 +1,9 @@
-package server;
+package server.handlers;
 
+import server.ServerMain;       // Import necessario
+import server.RequestProcessor; // Import necessario
 import server.models.ClientSession;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -53,13 +56,16 @@ public class ClientHandler {
                 if (!message.isEmpty()) {
                     System.out.println("[RECV] " + client.socket().getInetAddress() + ": " + message);
                     
-                    String response = RequestProcessor.process(message, session, server);
-                    
-                    if (response != null) {
-                        // Importante: le risposte devono essere inviate tramite ServerMain.sendJson
-                        // che ora aggiungerà il \n (vedi modifica successiva)
-                        server.sendResponse(key, response);
-                    }
+                    // --- REQUISITO MULTITHREADING: USIAMO IL POOL ---
+                    // Non blocchiamo il Selector, deleghiamo il lavoro pesante a un worker thread
+                    server.getWorkerPool().submit(() -> {
+                        String response = RequestProcessor.process(message, session, server);
+                        
+                        if (response != null) {
+                            // Invia la risposta (thread-safe per socket channel)
+                            server.sendResponse(key, response);
+                        }
+                    });
                 }
             }
         }

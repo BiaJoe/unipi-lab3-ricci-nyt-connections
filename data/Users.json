@@ -3,7 +3,7 @@
     "username": "A",
     "password": "B",
     "stats": {
-      "puzzlesPlayed": 5,
+      "puzzlesPlayed": 31,
       "puzzlesWon": 1,
       "currentStreak": 0,
       "maxStreak": 1,
@@ -19,9 +19,9 @@
     "username": "B",
     "password": "M",
     "stats": {
-      "puzzlesPlayed": 24,
+      "puzzlesPlayed": 293,
       "puzzlesWon": 7,
-      "currentStreak": 2,
+      "currentStreak": 0,
       "maxStreak": 3,
       "winDistribution": [
         4,
