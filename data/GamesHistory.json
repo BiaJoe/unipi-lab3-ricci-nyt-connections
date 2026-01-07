@@ -41,10 +41,34 @@
         }
       ]
     },
-    "runNumber": 80,
-    "playedAt": "2026-01-07T16:20:05.331312",
-    "startTimeMillis": 1767799205331,
-    "players": {}
+    "runNumber": 95,
+    "playedAt": "2026-01-07T19:32:36.274957",
+    "startTimeMillis": 1767810756275,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "1",
+          "B",
+          "5",
+          "3",
+          "4",
+          "C",
+          "E",
+          "F",
+          "7",
+          "6",
+          "0",
+          "9",
+          "D",
+          "2",
+          "8",
+          "A"
+        ],
+        "errors": 0,
+        "finished": true
+      }
+    }
   },
   "-2": {
     "gameData": {
@@ -88,32 +112,32 @@
         }
       ]
     },
-    "runNumber": 69,
-    "playedAt": "2026-01-07T16:00:55.305235",
-    "startTimeMillis": 1767798055305,
+    "runNumber": 83,
+    "playedAt": "2026-01-07T19:34:36.286219",
+    "startTimeMillis": 1767810876286,
     "players": {
-      "B": {
+      "b": {
+        "guessedThemes": [],
         "shuffledWords": [
-          "44",
-          "31",
-          "41",
-          "14",
           "33",
+          "31",
+          "23",
           "22",
           "11",
-          "43",
-          "34",
           "12",
-          "13",
-          "24",
-          "42",
-          "32",
           "21",
-          "23"
+          "32",
+          "42",
+          "44",
+          "41",
+          "34",
+          "24",
+          "14",
+          "13",
+          "43"
         ],
-        "guessedThemes": [],
         "errors": 0,
-        "isFinished": false
+        "finished": true
       }
     }
   },
@@ -159,32 +183,32 @@
         }
       ]
     },
-    "runNumber": 65,
-    "playedAt": "2026-01-07T16:01:55.313001",
-    "startTimeMillis": 1767798115313,
+    "runNumber": 76,
+    "playedAt": "2026-01-07T19:36:36.294538",
+    "startTimeMillis": 1767810996294,
     "players": {
-      "B": {
+      "b": {
+        "guessedThemes": [],
         "shuffledWords": [
-          "D3",
-          "A4",
+          "A3",
+          "D2",
+          "C1",
+          "A1",
+          "C2",
           "B3",
           "C3",
-          "D2",
-          "A3",
-          "C2",
-          "A2",
-          "B2",
-          "D4",
-          "B4",
           "D1",
-          "C1",
+          "D4",
+          "B2",
           "C4",
+          "D3",
           "B1",
-          "A1"
+          "A2",
+          "B4",
+          "A4"
         ],
-        "guessedThemes": [],
         "errors": 0,
-        "isFinished": false
+        "finished": true
       }
     }
   },
@@ -230,9 +254,34 @@
         }
       ]
     },
-    "runNumber": 60,
-    "playedAt": "2026-01-07T15:03:20.169600",
-    "startTimeMillis": 0
+    "runNumber": 68,
+    "playedAt": "2026-01-07T19:28:36.243795",
+    "startTimeMillis": 1767810516243,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "D",
+          "CCCC",
+          "BB",
+          "DD",
+          "DDD",
+          "B",
+          "AA",
+          "C",
+          "AAA",
+          "DDDD",
+          "A",
+          "CC",
+          "CCC",
+          "BBBB",
+          "AAAA",
+          "BBB"
+        ],
+        "errors": 0,
+        "finished": true
+      }
+    }
   },
   "-5": {
     "gameData": {
@@ -276,8 +325,33 @@
         }
       ]
     },
-    "runNumber": 57,
-    "playedAt": "2026-01-07T15:04:20.182276",
-    "startTimeMillis": 0
+    "runNumber": 64,
+    "playedAt": "2026-01-07T19:30:36.257283",
+    "startTimeMillis": 1767810636257,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          ":",
+          "\u003c\u003e",
+          ",",
+          "+",
+          "()",
+          "$",
+          ".",
+          "@",
+          "%",
+          ";",
+          "[]",
+          "{}",
+          "/",
+          "#",
+          "-",
+          "*"
+        ],
+        "errors": 0,
+        "finished": true
+      }
+    }
   }
 }

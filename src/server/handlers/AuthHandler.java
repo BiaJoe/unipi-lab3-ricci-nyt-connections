@@ -12,79 +12,82 @@ import utils.ServerResponse;
 public class AuthHandler {
 
     public static String handleRegister(ClientRequest.Register req, ClientSession session) {
-        if (req.name == null || req.psw == null) return ResponseUtils.error("Dati mancanti", 401);
+        if (req.name == null || req.psw == null) {
+            return ResponseUtils.error("Dati mancanti", 400);
+        }
         
-        boolean ok = UserManager.getInstance().register(req.name, req.psw);
-        if (ok) {
+        boolean registered = UserManager.getInstance().register(req.name, req.psw);
+        if (registered) {
             ServerLogger.info("Nuovo utente registrato: " + req.name);
             
-            // 1. Auto Login
+            // Auto Login immediato dopo la registrazione
+            // Nota: register() non logga automaticamente nel UserManager, quindi facciamo login esplicito
             UserManager.getInstance().login(req.name, req.psw);
             
-            // 2. Setup Sessione
-            session.setUsername(req.name);
-            session.setLoggedIn(true);
-            session.setUdpPort(0); 
-
-            // 3. Binding Match Corrente (se esiste)
-            GameMatch currentMatch = GameManager.getInstance().getCurrentMatch();
-            ServerResponse.GameInfoData infoData = null;
-            
-            if (currentMatch != null) {
-                PlayerGameState pState = currentMatch.getOrCreatePlayerState(req.name);
-                session.bindState(pState);
-                
-                // Costruiamo la scheda iniziale
-                infoData = InfoHandler.buildGameInfoData(currentMatch, session);
-            }
-            
-            return ResponseUtils.toJson(new ServerResponse.Auth("Registrazione avvenuta. Benvenuto!", infoData));
-            
+            return completeLoginProcess(session, req.name, 0, "Registrazione avvenuta. Benvenuto!");
         } else {
-            return ResponseUtils.error("Username già in uso", 402);
+            return ResponseUtils.error("Username già in uso", 409);
         }
     }
 
     public static String handleLogin(ClientRequest.Login req, ClientSession session) {
-        if (session.isLoggedIn()) return ResponseUtils.error("Già loggato", 405);
+        if (session.isLoggedIn()) {
+            return ResponseUtils.error("Già loggato", 405);
+        }
         
         if (UserManager.getInstance().login(req.username, req.psw)) {
-            session.setUsername(req.username);
-            session.setLoggedIn(true);
-            if (req.udpPort > 0) session.setUdpPort(req.udpPort);
-            
             ServerLogger.info("Utente loggato: " + req.username);
-
-            GameMatch currentMatch = GameManager.getInstance().getCurrentMatch();
-            ServerResponse.GameInfoData infoData = null;
-            
-            if (currentMatch != null) {
-                PlayerGameState pState = currentMatch.getOrCreatePlayerState(req.username);
-                session.bindState(pState);
-                
-                infoData = InfoHandler.buildGameInfoData(currentMatch, session);
-            }
-            
-            return ResponseUtils.toJson(new ServerResponse.Auth("Login effettuato", infoData));
+            return completeLoginProcess(session, req.username, req.udpPort, "Login effettuato");
         }
+        
         return ResponseUtils.error("Credenziali errate", 401);
     }
 
     public static String handleLogout(ClientSession session) {
-        if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
+        if (!session.isLoggedIn()) {
+            return ResponseUtils.error("Non eri loggato", 401);
+        }
+        
         ServerLogger.info("Utente logout: " + session.getUsername());
         
         session.setLoggedIn(false);
         session.setUsername(null);
         session.setUdpPort(0);
-        session.bindState(null); 
         
         return ResponseUtils.success("Logout effettuato");
     }
     
     public static String handleUpdateCredentials(ClientRequest.UpdateCredentials req) {
         boolean ok = UserManager.getInstance().updateCredentials(req.oldName, req.newName, req.oldPsw, req.newPsw);
-        if (ok) return ResponseUtils.success("Credenziali aggiornate");
-        else return ResponseUtils.error("Errore: credenziali errate o nuovo username occupato", 403);
+        
+        if (ok) {
+            return ResponseUtils.success("Credenziali aggiornate");
+        } else {
+            return ResponseUtils.error("Errore: credenziali errate o nuovo username occupato", 403);
+        }
+    }
+
+    // --- HELPER PRIVATO PER NON DUPLICARE CODICE ---
+    
+    private static String completeLoginProcess(ClientSession session, String username, int udpPort, String successMessage) {
+        // 1. Setup Sessione
+        session.setUsername(username);
+        session.setLoggedIn(true);
+        if (udpPort > 0) session.setUdpPort(udpPort);
+
+        // 2. Controllo Partita Attiva
+        GameMatch currentMatch = GameManager.getInstance().getCurrentMatch();
+        ServerResponse.GameInfoData infoData = null;
+        
+        if (currentMatch != null) {
+            // Se c'è una partita, recuperiamo/creiamo lo stato del giocatore
+            PlayerGameState pState = currentMatch.getOrCreatePlayerState(username);
+            
+            // Costruiamo l'oggetto GameInfoData usando la Factory in ResponseUtils
+            infoData = ResponseUtils.buildGameInfo(currentMatch, pState);
+        }
+        
+        // 3. Risposta Finale (Auth + eventuale GameInfo)
+        return ResponseUtils.toJson(new ServerResponse.Auth(successMessage, infoData));
     }
 }

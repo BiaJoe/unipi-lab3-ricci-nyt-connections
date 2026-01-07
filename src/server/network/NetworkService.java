@@ -12,7 +12,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Collection;
-import java.util.Collections; // Importante
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +35,6 @@ public class NetworkService {
         selector = Selector.open();
         serverSocket = ServerSocketChannel.open();
         
-        // Uso ServerConfig.PORT statico
         serverSocket.bind(new InetSocketAddress(ServerConfig.PORT));
         serverSocket.configureBlocking(false);
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
@@ -49,7 +48,12 @@ public class NetworkService {
         
         try {
             while (running && !Thread.currentThread().isInterrupted()) {
-                selector.select();
+                if (selector == null) {
+                    ServerLogger.error("Selector non inizializzato! Hai chiamato init()?");
+                    return;
+                }
+                
+                selector.select(); // Si blocca qui
                 
                 if (!running) break;
 
@@ -74,7 +78,7 @@ public class NetworkService {
 
     public void stop() {
         this.running = false;
-        if (selector != null) selector.wakeup();
+        if (selector != null) selector.wakeup(); // Sveglia il selector.select()
         if (workerPool != null) workerPool.shutdown();
         ServerLogger.info("NetworkService fermato.");
     }
@@ -108,7 +112,6 @@ public class NetworkService {
         }
     }
 
-    // FIX: Aggiunto controllo null-safety per evitare crash se chiamato troppo presto
     public Collection<ClientSession> getAllSessions() {
         if (selector == null) {
             return Collections.emptyList();

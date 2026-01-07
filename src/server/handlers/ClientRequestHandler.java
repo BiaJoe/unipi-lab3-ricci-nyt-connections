@@ -10,17 +10,13 @@ import utils.ClientRequest;
 public class ClientRequestHandler {
     private static final Gson gson = new Gson();
 
-    /**
-     * Smista la richiesta al gestore corretto.
-     * NOTA: Deve essere STATIC per essere chiamato da PacketHandler senza istanza.
-     */
     public static String handleRequest(String jsonInput, ClientSession session) {
         if (jsonInput == null || jsonInput.isEmpty()) {
             return ResponseUtils.error("Richiesta vuota", 400);
         }
 
         try {
-            // 1. Parsing preliminare
+            // Parsing preliminare per leggere "operation"
             JsonObject root = JsonParser.parseString(jsonInput).getAsJsonObject();
             if (!root.has("operation")) {
                 return ResponseUtils.error("Campo 'operation' mancante", 400);
@@ -28,7 +24,7 @@ public class ClientRequestHandler {
 
             String op = root.get("operation").getAsString();
 
-            // 2. Dispatching
+            // Routing
             switch (op) {
                 case "register":
                     ClientRequest.Register reqReg = gson.fromJson(jsonInput, ClientRequest.Register.class);

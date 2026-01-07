@@ -13,14 +13,12 @@ public class StatsHandler {
     public static String handleRequestGameStats(ClientRequest.GameInfo req, ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
         
-        // Se non specificato ID, prendi corrente
         GameMatch match = (req.gameId == null || req.gameId == 0) 
             ? GameManager.getInstance().getCurrentMatch()
             : GameManager.getInstance().getGameMatchById(req.gameId);
 
         if (match == null) return ResponseUtils.error("Partita non trovata", 404);
 
-        // Costruisci risposta usando lo Snapshot del match
         ServerResponse.GameStats resp = new ServerResponse.GameStats();
         resp.gameId = match.getGameId();
         resp.timeLeft = match.getTimeLeft();

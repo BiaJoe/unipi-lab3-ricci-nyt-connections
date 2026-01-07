@@ -92,12 +92,12 @@ public class ServerResponse {
 
     // --- 7. STATISTICHE GIOCATORE (Personali) ---
     public static class PlayerStats extends ServerResponse {
-        public Integer puzzlesCompleted; //
-        public Float winRate;            //
-        public Float lossRate;           //
-        public Integer currentStreak;    //
-        public Integer maxStreak;        //
-        public Integer perfectPuzzles;   //
+        public Integer puzzlesCompleted; 
+        public Float winRate;            
+        public Float lossRate;           
+        public Integer currentStreak;    
+        public Integer maxStreak;        
+        public Integer perfectPuzzles;   
         public int[] mistakeHistogram;   // (Array di 5 int: 0 err, 1 err... 4 err)
 
         public PlayerStats() { super("RES_PLAYER_STATS", "OK", null); }
@@ -105,6 +105,8 @@ public class ServerResponse {
 
     // --- 8. CLASSIFICA (Leaderboard) ---
     public static class Leaderboard extends ServerResponse {
+        // FIX: Usiamo RankingEntry locale, non UserManager.UserRank
+        // Questo evita errori di importazione e dipendenze circolari
         public List<RankingEntry> ranking;
 
         public Leaderboard(List<RankingEntry> ranking) {
@@ -114,6 +116,7 @@ public class ServerResponse {
     }
 
     // --- DTO DI SUPPORTO ---
+    
     public static class GroupData {
         public String theme;
         public List<String> words;
@@ -129,8 +132,13 @@ public class ServerResponse {
 
     public static class PlayerResult {
         public String username;
-        public int errors;
+        public int score; // <--- FIX: Corretto da 'errors' a 'score'
         public boolean won;
-        public PlayerResult(String u, int e, boolean w) { this.username = u; this.errors = e; this.won = w; }
+        
+        public PlayerResult(String u, int s, boolean w) { 
+            this.username = u; 
+            this.score = s; 
+            this.won = w; 
+        }
     }
 }

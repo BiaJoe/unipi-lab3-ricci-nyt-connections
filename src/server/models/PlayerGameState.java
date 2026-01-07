@@ -6,25 +6,40 @@ import java.util.List;
 import java.util.Set;
 
 public class PlayerGameState {
-    private List<String> shuffledWords = new ArrayList<>();
-    private Set<String> guessedThemes = new HashSet<>();
+    private final Set<String> guessedThemes = new HashSet<>();
+    private List<String> shuffledWords = new ArrayList<>(); // <--- NUOVO
     private int errors = 0;
-    private boolean isFinished = false;
+    private boolean finished = false;
 
-    public PlayerGameState() {}
+    // --- LOGICA DI GIOCO ---
 
-    public List<String> getShuffledWords() { return shuffledWords; }
-    public void setShuffledWords(List<String> list) { this.shuffledWords = list; }
+    public void addGuessedTheme(String theme) {
+        guessedThemes.add(theme);
+    }
+    
+    public boolean isThemeGuessed(String theme) {
+        return guessedThemes.contains(theme);
+    }
 
+    public void incrementErrors() {
+        errors++;
+    }
+
+    public int getScore() {
+        return (guessedThemes.size() * 6) - (errors * 4);
+    }
+
+    public int getGroupsFoundCount() {
+        return guessedThemes.size();
+    }
+
+    // --- GETTERS & SETTERS ---
     public Set<String> getGuessedThemes() { return guessedThemes; }
-    public void addGuessedTheme(String theme) { guessedThemes.add(theme); }
-    public boolean isThemeGuessed(String theme) { return guessedThemes.contains(theme); }
-
     public int getErrors() { return errors; }
-    public void incrementErrors() { this.errors++; }
+    public boolean isFinished() { return finished; }
+    public void setFinished(boolean finished) { this.finished = finished; }
     
-    public boolean isFinished() { return isFinished; }
-    public void setFinished(boolean finished) { this.isFinished = finished; }
-    
-    public int getScore() { return guessedThemes.size(); }
+    // Gestione parole mescolate
+    public List<String> getShuffledWords() { return shuffledWords; }
+    public void setShuffledWords(List<String> words) { this.shuffledWords = words; }
 }

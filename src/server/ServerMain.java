@@ -45,11 +45,12 @@ public class ServerMain {
         // 3. Avvia Listener Console (exit)
         startConsoleListener();
         
-        // 4. Avvia Rete (Bloccante)
-        // Nota: non serve passare la porta, la legge da ServerConfig.PORT
-        networkService.start();
+        // 4. Avvia Rete
+        networkService.init();  // <--- IMPORTANTE: Inizializza il selector
+        networkService.start(); // <--- BLOCCANTE: Il main thread si ferma qui
         
-        // Quando networkService.start() ritorna (stop chiamato), chiudiamo tutto
+        // Questa riga viene raggiunta solo se networkService.start() termina (es. errore)
+        // Ma per l'exit manuale ci pensa il thread console.
         close();
     }
 
@@ -58,22 +59,26 @@ public class ServerMain {
             try (Scanner s = new Scanner(System.in)) {
                 while (true) {
                     if (s.hasNextLine() && "exit".equalsIgnoreCase(s.nextLine().trim())) {
-                        ServerLogger.info("Ricevuto comando exit...");
-                        networkService.stop(); 
-                        gameScheduler.stop(); 
-                        // Non serve break qui, networkService.stop() sbloccherà il main thread
+                        // Chiudiamo tutto centralmente con close()
+                        // Questo terminerà il processo forzatamente
+                        close(); 
                         break;
                     }
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                ServerLogger.error("Errore console: " + e.getMessage());
+            }
         }).start();
     }
     
     private void close() {
         ServerLogger.info("Arresto in corso...");
+        
         if (gameScheduler != null) gameScheduler.stop();
         if (networkService != null) networkService.stop();
         if (persistenceService != null) persistenceService.stop();
-        System.exit(0);
+        
+        ServerLogger.info("Server chiuso. Bye!");
+        System.exit(0); // Terminazione forzata di tutti i thread
     }
 }

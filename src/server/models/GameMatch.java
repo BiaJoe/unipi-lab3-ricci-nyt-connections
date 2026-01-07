@@ -2,20 +2,17 @@ package server.models;
 
 import server.ServerConfig;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections; // Importante
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// IMPORTANTE: La classe deve chiamarsi GameMatch, non PlayedGame!
 public class GameMatch {
-    // Riferimento al "Blueprint"
     private final Game gameData;
-    
-    // Metadati Istanza
     private final int runNumber;
     private final String playedAt;
     private final long startTimeMillis;
-
-    // Stato Giocatori (Key: Username -> Value: State)
     private final ConcurrentHashMap<String, PlayerGameState> players;
 
     public GameMatch(Game gameData, int runNumber) {
@@ -29,7 +26,21 @@ public class GameMatch {
     // --- LOGICA DI GIOCO ---
 
     public PlayerGameState getOrCreatePlayerState(String username) {
-        return players.computeIfAbsent(username, k -> new PlayerGameState());
+        return players.computeIfAbsent(username, k -> {
+            PlayerGameState ps = new PlayerGameState();
+            
+            // --- FIX SHUFFLE ---
+            // Recuperiamo tutte le parole, le mescoliamo UNA volta e le salviamo nello stato
+            List<String> allWords = new ArrayList<>();
+            for (Game.Group g : gameData.getGroups()) {
+                allWords.addAll(g.getWords());
+            }
+            Collections.shuffle(allWords);
+            ps.setShuffledWords(allWords);
+            // -------------------
+            
+            return ps;
+        });
     }
     
     public PlayerGameState getPlayerState(String username) {
@@ -42,7 +53,6 @@ public class GameMatch {
         return Math.max(0, remaining);
     }
 
-    // Sostituisce la classe LiveStats inutile
     public StatsSnapshot getStatsSnapshot() {
         int active = 0, finished = 0, won = 0;
         for (PlayerGameState p : players.values()) {
@@ -56,14 +66,12 @@ public class GameMatch {
         return new StatsSnapshot(active, finished, won);
     }
 
-    // --- GETTERS ---
     public Game getGameData() { return gameData; }
     public int getRunNumber() { return runNumber; }
     public String getPlayedAt() { return playedAt; }
     public Map<String, PlayerGameState> getPlayers() { return players; }
     public int getGameId() { return gameData.getGameId(); }
 
-    // DTO Interno per passare i dati al Handler senza file extra
     public static class StatsSnapshot {
         public int active, finished, won;
         public StatsSnapshot(int a, int f, int w) { active=a; finished=f; won=w; }

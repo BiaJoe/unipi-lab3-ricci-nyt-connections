@@ -70,31 +70,40 @@ public class ConsoleUI implements ClientRenderer {
     public void showGameInfo(ServerResponse.GameInfoData info) {
         System.out.println("\n" + YELLOW + "--- PARTITA #" + info.gameId + " ---" + RESET);
         
-        // Se la partita è finita (o tempo scaduto), mostriamo l'esito
+        boolean victory = (info.correctGroups != null && info.correctGroups.size() == 4);
+        
+        // Se la partita è finita (o tempo scaduto)
         if (Boolean.TRUE.equals(info.isFinished) || info.timeLeft <= 0) {
-            String esito = (info.currentScore != null && info.currentScore == 4) 
-                ? (GREEN + "VITTORIA!" + RESET) 
-                : (RED + "PERSO (Tempo scaduto o troppi errori)" + RESET);
+            String esito;
+            if (victory) {
+                esito = GREEN + "VITTORIA!" + RESET;
+            } else {
+                esito = RED + "PERSO (Tempo scaduto o troppi errori)" + RESET;
+            }
             
             System.out.println(CYAN + "Stato: " + esito + " | Punti Finali: " + info.currentScore);
         } else {
+            // Partita in corso
             System.out.printf("Tempo: %ds | Punti: %d | Errori: %d/4\n", info.timeLeft, info.currentScore, info.mistakes);
         }
+        // ---------------------------
 
         if (info.words != null && !info.words.isEmpty()) {
             printGrid(info.words, info.correctGroups);
         }
 
+        // Mostra soluzione se presente (di solito quando finisce)
         if (Boolean.TRUE.equals(info.isFinished) && info.solution != null) {
             System.out.println("\n" + PURPLE + "=== SOLUZIONE ===" + RESET);
             for (var g : info.solution) System.out.println(" * " + g.theme + ": " + g.words);
         }
 
+        // Mostra classifica partita
         if (info.playerResults != null && !info.playerResults.isEmpty()) {
             System.out.println("\n" + PURPLE + "=== PARTECIPANTI ===" + RESET);
             for (var p : info.playerResults) {
                 String esito = p.won ? (GREEN + "VITTORIA" + RESET) : (RED + "PERSO" + RESET);
-                System.out.printf(" - %-15s: %s (Err: %d)\n", p.username, esito, p.errors);
+                System.out.printf(" - %-15s: %s (Punti: %d)\n", p.username, esito, p.score);
             }
         }
         printPrompt();
@@ -104,10 +113,28 @@ public class ConsoleUI implements ClientRenderer {
     public void showSubmitResult(ServerResponse.Proposal p) {
         if (Boolean.TRUE.equals(p.isCorrect)) {
             System.out.println(GREEN + ">>> ESATTO! Gruppo: " + p.groupTitle + RESET);
-            if (p.currentScore != null && p.currentScore == 4) printFile(trophyFile); 
+            
+            // --- FIX TROFEO ---
+            // Se il tentativo è corretto E la partita è finita -> Hai vinto!
+            if (Boolean.TRUE.equals(p.isFinished)) {
+                System.out.println(GREEN + "\n" + p.message + RESET); // Stampa "VITTORIA!" dal server
+                printFile(trophyFile);
+            }
+            // ------------------
+            
         } else {
             System.out.println(RED + ">>> SBAGLIATO!" + RESET);
+            if (Boolean.TRUE.equals(p.isFinished)) {
+                System.out.println(RED + "\n" + p.message + RESET); // Stampa "HAI PERSO"
+            }
         }
+        
+        // Se la proposta porta alla fine della partita e contiene la soluzione (JSON aggiornato), stampala subito
+        if (Boolean.TRUE.equals(p.isFinished) && p.solution != null) {
+             System.out.println("\n" + PURPLE + "=== SOLUZIONE ===" + RESET);
+             for (var g : p.solution) System.out.println(" * " + g.theme + ": " + g.words);
+        }
+        
         printPrompt();
     }
 
@@ -124,7 +151,8 @@ public class ConsoleUI implements ClientRenderer {
     @Override
     public void showPlayerStats(ServerResponse.PlayerStats s) {
         System.out.println("\n" + PURPLE + "=== LE TUE STATISTICHE ===" + RESET);
-        System.out.printf("Partite: %d | Win Rate: %.1f%%\n", s.puzzlesCompleted, s.winRate * 100);
+        System.out.printf("Partite: %d | Win Rate: %.1f%%\n", s.puzzlesCompleted, s.winRate); // winRate è già float 0-100 lato server ora? o 0-1? Controlla server.
+        // Nel server era: resp.winRate = (won/played) * 100.0f; -> Quindi qui stampiamo diretto
         System.out.printf("Streak: %d (Max: %d) | Perfect: %d\n", s.currentStreak, s.maxStreak, s.perfectPuzzles);
         
         System.out.println("\n" + YELLOW + "Istogramma Errori:" + RESET);
@@ -173,19 +201,21 @@ public class ConsoleUI implements ClientRenderer {
         for (int i = 0; i < words.size(); i++) {
             String w = words.get(i);
             String displayVal = (w == null) ? "???" : w;
-            String color = guessedWords.contains(w) ? GREEN : RESET;
+            String color = guessedWords.contains(w) ? GREEN : RESET; // Verde se indovinata
+            
             System.out.print(color + String.format("%-" + (maxLen + 2) + "s", displayVal) + RESET);
             
             if ((i + 1) % 4 == 0) System.out.println();
         }
-        // FIX 1: Aggiunto a capo extra per staccare dal prompt
         System.out.println(); 
     }
     
     private void printFile(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
-            while ((line = br.readLine()) != null) System.out.println(line);
-        } catch (IOException e) { }
+            while ((line = br.readLine()) != null) System.out.println(YELLOW + line + RESET);
+        } catch (IOException e) { 
+             System.out.println(YELLOW + "[FILE STAMPATO]" + RESET);
+        }
     }
 }

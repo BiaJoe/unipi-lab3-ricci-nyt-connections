@@ -8,9 +8,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class PacketHandler {
-
-    // Nota: Rimosso 'new ClientRequestHandler()' perché ora i metodi sono statici
-    
+        
     public static void processReceivedData(ClientSession session, byte[] data, NetworkService netService, SelectionKey key) {
         // 1. Accoda i nuovi dati al buffer della sessione
         session.getBuffer().append(new String(data));
