@@ -1,7 +1,10 @@
 package server.handlers;
 
 import server.GameManager;
-import server.models.*;
+import server.models.ClientSession;
+import server.models.GameMatch;
+import server.models.Game;
+import server.models.PlayerGameState;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
@@ -16,103 +19,94 @@ public class InfoHandler {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
 
         GameManager manager = GameManager.getInstance();
-        Game currentGame = manager.getCurrentGame();
+        GameMatch current = manager.getCurrentMatch();
         
-        int requestedId = (req.gameId == null || req.gameId == 0) ? 
-                          (currentGame != null ? currentGame.getGameId() : -1) : 
-                          req.gameId;
+        // Se req.gameId è 0 o null, prendiamo la partita corrente
+        int targetId = (req.gameId == null || req.gameId == 0) ? 
+                       (current != null ? current.getGameId() : -1) : 
+                       req.gameId;
 
-        // CASO A: Partita Corrente
-        if (currentGame != null && currentGame.getGameId() == requestedId) {
-            ServerResponse.GameInfoData resp = buildGameInfoData(currentGame, session);
-            return ResponseUtils.toJson(resp);
-        }
-        
-        // CASO B: Partita Storico
-        PlayedGame archived = manager.getArchivedGame(requestedId);
-        if (archived != null) {
-            return getArchivedGameInfo(archived, session);
+        // Recuperiamo il match (dal manager che guarda sia current che history)
+        GameMatch match = manager.getGameMatchById(targetId);
+
+        if (match == null) {
+            return ResponseUtils.error("Partita " + targetId + " non trovata.", 404);
         }
 
-        return ResponseUtils.error("Partita " + requestedId + " non trovata.", 404);
+        ServerResponse.GameInfoData resp = buildGameInfoData(match, session);
+        return ResponseUtils.toJson(resp);
     }
 
-    // Costruisce la risposta completa (usata anche da AuthHandler)
-    public static ServerResponse.GameInfoData buildGameInfoData(Game g, ClientSession session) {
+    // Costruisce la risposta (funziona sia per Auth che per Info)
+    public static ServerResponse.GameInfoData buildGameInfoData(GameMatch match, ClientSession session) {
         ServerResponse.GameInfoData resp = new ServerResponse.GameInfoData("OK");
         
-        // Popolamento campi piatti (Flat fields)
-        resp.gameId = g.getGameId();
-        resp.timeLeft = GameManager.getInstance().getTimeLeft();
-        resp.mistakes = session.getErrors();
-        resp.currentScore = session.getScore();
-        resp.isFinished = session.isGameFinished() || resp.timeLeft <= 0;
+        resp.gameId = match.getGameId();
+        resp.timeLeft = match.getTimeLeft(); // 0 se è una partita storica
         
-        // Logica Mescolamento Parole (direttamente qui, niente DTO intermedio)
-        PlayerGameState pState = GameManager.getInstance().getOrCreatePlayerState(session.getUsername());
+        // Recuperiamo lo stato del player dal match
+        // Nota: se è una partita vecchia e il player non c'era, pState sarà null
+        PlayerGameState pState = match.getPlayerState(session.getUsername());
         
-        if (pState.getShuffledWords() == null || pState.getShuffledWords().isEmpty()) {
-            List<String> newShuffle = new ArrayList<>();
-            for (Group group : g.getGroups()) newShuffle.addAll(group.getWords());
-            Collections.shuffle(newShuffle);
-            pState.setShuffledWords(newShuffle);
+        // Se il player sta giocando ADESSO e non ha ancora lo stato inizializzato nel match, creiamolo
+        if (pState == null && match == GameManager.getInstance().getCurrentMatch()) {
+            pState = match.getOrCreatePlayerState(session.getUsername());
         }
 
-        resp.words = resp.words = new ArrayList<>(pState.getShuffledWords());
-
-        // Popola i gruppi indovinati
-        resp.correctGroups = new ArrayList<>();
-        for (Group gr : g.getGroups()) {
-            if (session.isThemeGuessed(gr.getTheme())) {
-                resp.correctGroups.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
+        if (pState != null) {
+            resp.mistakes = pState.getErrors();
+            resp.currentScore = pState.getScore();
+            resp.isFinished = pState.isFinished() || resp.timeLeft <= 0;
+            
+            // Mescolamento parole (Lazy Init)
+            if (pState.getShuffledWords().isEmpty()) {
+                List<String> newShuffle = new ArrayList<>();
+                for (Game.Group group : match.getGameData().getGroups()) {
+                    newShuffle.addAll(group.getWords());
+                }
+                Collections.shuffle(newShuffle);
+                pState.setShuffledWords(newShuffle);
             }
+            resp.words = new ArrayList<>(pState.getShuffledWords());
+            
+            // Gruppi indovinati (per colorare di verde)
+            resp.correctGroups = new ArrayList<>();
+            for (Game.Group gr : match.getGameData().getGroups()) {
+                if (pState.isThemeGuessed(gr.getTheme())) {
+                    resp.correctGroups.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
+                }
+            }
+        } else {
+            // Caso: Partita storica a cui non ho partecipato
+            resp.mistakes = 0;
+            resp.currentScore = 0;
+            resp.isFinished = true;
+            resp.message = "Non hai partecipato a questa partita.";
         }
-        
-        // Se finita, aggiunge soluzione
+
+        // Se la partita è finita (per tempo o per il player), mostriamo la soluzione e i risultati degli altri
         if (Boolean.TRUE.equals(resp.isFinished)) {
-            resp.solution = buildSolution(g);
+            resp.solution = buildSolution(match.getGameData());
+            
+            // Classifica della partita
+            resp.playerResults = new ArrayList<>();
+            for (Map.Entry<String, PlayerGameState> entry : match.getPlayers().entrySet()) {
+                boolean won = entry.getValue().getScore() == 4;
+                resp.playerResults.add(new ServerResponse.PlayerResult(
+                    entry.getKey(), 
+                    entry.getValue().getErrors(), 
+                    won
+                ));
+            }
         }
         
         return resp;
     }
 
-    private static String getArchivedGameInfo(PlayedGame pg, ClientSession session) {
-        PlayerGameState myOldState = pg.getPlayerState(session.getUsername());
-        int gId = pg.getGameData().getGameId();
-        
-        ServerResponse.GameInfoData resp = new ServerResponse.GameInfoData("Storico Partita " + gId);
-        resp.gameId = gId;
-        resp.timeLeft = 0; 
-        resp.isFinished = true;
-        resp.solution = buildSolution(pg.getGameData());
-
-        if (myOldState != null) {
-            resp.mistakes = myOldState.getErrors();
-            resp.currentScore = myOldState.getScore();
-        } else {
-            resp.mistakes = 0;
-            resp.currentScore = 0;
-            resp.message = "Non hai partecipato a questa partita.";
-        }
-        
-        // Lista risultati partecipanti
-        resp.playerResults = new ArrayList<>();
-        Map<String, PlayerGameState> allPlayers = pg.getPlayerResults();
-        
-        if (allPlayers != null) {
-            for (Map.Entry<String, PlayerGameState> entry : allPlayers.entrySet()) {
-                boolean won = entry.getValue().getScore() == 4; 
-                resp.playerResults.add(new ServerResponse.PlayerResult(entry.getKey(), entry.getValue().getErrors(), won));
-            }
-        }
-        
-        return ResponseUtils.toJson(resp);
-    }
-
     public static List<ServerResponse.GroupData> buildSolution(Game g) {
         List<ServerResponse.GroupData> solution = new ArrayList<>();
         if (g != null) {
-            for (Group gr : g.getGroups()) {
+            for (Game.Group gr : g.getGroups()) {
                 solution.add(new ServerResponse.GroupData(gr.getTheme(), gr.getWords()));
             }
         }

@@ -3,69 +3,60 @@ package server.handlers;
 import server.GameManager;
 import server.UserManager;
 import server.models.ClientSession;
-import server.models.Game;
-import server.models.LiveStats;
-import server.models.UserStats;
+import server.models.GameMatch;
+import server.models.User;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
 public class StatsHandler {
 
-    // Gestisce statistiche partita (Globali)
     public static String handleRequestGameStats(ClientRequest.GameInfo req, ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
         
-        Game currentG = GameManager.getInstance().getCurrentGame();
-        int gId = (req.gameId != null && req.gameId != 0) ? req.gameId : (currentG != null ? currentG.getGameId() : -1);
-        
-        if (currentG == null || currentG.getGameId() != gId) {
-            return ResponseUtils.error("Statistiche live disponibili solo per la partita corrente", 404);
-        }
+        // Se non specificato ID, prendi corrente
+        GameMatch match = (req.gameId == null || req.gameId == 0) 
+            ? GameManager.getInstance().getCurrentMatch()
+            : GameManager.getInstance().getGameMatchById(req.gameId);
 
+        if (match == null) return ResponseUtils.error("Partita non trovata", 404);
+
+        // Costruisci risposta usando lo Snapshot del match
         ServerResponse.GameStats resp = new ServerResponse.GameStats();
-        resp.gameId = gId;
-        resp.timeLeft = GameManager.getInstance().getTimeLeft();
+        resp.gameId = match.getGameId();
+        resp.timeLeft = match.getTimeLeft();
         
-        LiveStats stats = GameManager.getInstance().calculateStats();        
-        resp.playersActive = stats.active;
-        resp.playersFinished = stats.finished;
-        resp.playersWon = stats.won;
+        GameMatch.StatsSnapshot snap = match.getStatsSnapshot();
+        resp.playersActive = snap.active;
+        resp.playersFinished = snap.finished;
+        resp.playersWon = snap.won;
         
         return ResponseUtils.toJson(resp);
     }
 
-    // Gestisce statistiche personali del giocatore
     public static String handleRequestPlayerStats(ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
         
-        UserStats stats = UserManager.getInstance().getUserStats(session.getUsername());
-        
+        User user = UserManager.getInstance().getUser(session.getUsername());
         ServerResponse.PlayerStats resp = new ServerResponse.PlayerStats();
         
-        if (stats != null) {
-            resp.puzzlesCompleted = stats.puzzlesPlayed;
-            resp.currentStreak = stats.currentStreak;
-            resp.maxStreak = stats.maxStreak;
-            resp.mistakeHistogram = stats.winDistribution; 
+        if (user != null) {
+            resp.puzzlesCompleted = user.getPuzzlesPlayed();
+            resp.currentStreak = user.getCurrentStreak();
+            resp.maxStreak = user.getMaxStreak();
+            resp.mistakeHistogram = user.getWinDistribution(); 
             
-            if (stats.puzzlesPlayed > 0) {
-                resp.winRate = ((float)stats.puzzlesWon / stats.puzzlesPlayed) * 100.0f;
+            if (user.getPuzzlesPlayed() > 0) {
+                resp.winRate = ((float)user.getPuzzlesWon() / user.getPuzzlesPlayed()) * 100.0f;
                 resp.lossRate = 100.0f - resp.winRate;
-            } else {
-                resp.winRate = 0.0f;
-                resp.lossRate = 0.0f;
             }
             
-            if (stats.winDistribution != null && stats.winDistribution.length > 0) {
-                resp.perfectPuzzles = stats.winDistribution[0];
-            } else {
-                resp.perfectPuzzles = 0;
+            if (resp.mistakeHistogram != null && resp.mistakeHistogram.length > 0) {
+                resp.perfectPuzzles = resp.mistakeHistogram[0];
             }
         }
         return ResponseUtils.toJson(resp);
     }
 
-    // Gestisce la classifica
     public static String handleRequestLeaderboard(ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", 401);
         

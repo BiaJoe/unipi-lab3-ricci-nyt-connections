@@ -12,6 +12,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Collection;
+import java.util.Collections; // Importante
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,12 +26,12 @@ public class NetworkService {
     private volatile boolean running = true;
 
     public NetworkService() {
-        // Pool di thread dimensionato sui core della CPU
         this.workerPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.udpSender = new UdpSender();
     }
 
-    public void start() throws IOException {
+    // --- FASE 1: Inizializzazione (Non bloccante) ---
+    public void init() throws IOException {
         selector = Selector.open();
         serverSocket = ServerSocketChannel.open();
         
@@ -39,27 +40,35 @@ public class NetworkService {
         serverSocket.configureBlocking(false);
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
 
-        ServerLogger.info("Server in ascolto su porta TCP " + ServerConfig.PORT);
+        ServerLogger.info("Server inizializzato su porta TCP " + ServerConfig.PORT);
+    }
+
+    // --- FASE 2: Loop Principale (Bloccante) ---
+    public void start() {
+        ServerLogger.info("Network Loop avviato. In attesa di connessioni...");
         
-        // Loop principale
-        while (running && !Thread.currentThread().isInterrupted()) {
-            selector.select();
-            
-            if (!running) break;
+        try {
+            while (running && !Thread.currentThread().isInterrupted()) {
+                selector.select();
+                
+                if (!running) break;
 
-            Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
-            while (keys.hasNext()) {
-                SelectionKey key = keys.next();
-                keys.remove();
+                Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
+                while (keys.hasNext()) {
+                    SelectionKey key = keys.next();
+                    keys.remove();
 
-                if (!key.isValid()) continue;
+                    if (!key.isValid()) continue;
 
-                if (key.isAcceptable()) {
-                    acceptConnection();
-                } else if (key.isReadable()) {
-                    TcpReader.readFromClient(key, this);
+                    if (key.isAcceptable()) {
+                        acceptConnection();
+                    } else if (key.isReadable()) {
+                        TcpReader.readFromClient(key, this);
+                    }
                 }
             }
+        } catch (IOException e) {
+            ServerLogger.error("Errore nel loop di rete: " + e.getMessage());
         }
     }
 
@@ -83,7 +92,6 @@ public class NetworkService {
         ServerLogger.info("Nuova connessione: " + client.getRemoteAddress());
     }
 
-    // Metodo per sottomettere task al WorkerPool (usato da PacketHandler)
     public void submitTask(Runnable task) {
         if (!workerPool.isShutdown()) {
             workerPool.execute(task);
@@ -100,7 +108,11 @@ public class NetworkService {
         }
     }
 
+    // FIX: Aggiunto controllo null-safety per evitare crash se chiamato troppo presto
     public Collection<ClientSession> getAllSessions() {
+        if (selector == null) {
+            return Collections.emptyList();
+        }
         return selector.keys().stream()
                 .filter(k -> k.attachment() instanceof ClientSession)
                 .map(k -> (ClientSession) k.attachment())
@@ -119,7 +131,6 @@ public class NetworkService {
         }
     }
     
-    // Helper per inviare tramite chiave (usato da PacketHandler)
     public void sendTcpResponse(SelectionKey key, String json) {
         TcpWriter.send(key, json, this);
     }

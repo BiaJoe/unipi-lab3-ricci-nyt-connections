@@ -41,33 +41,10 @@
         }
       ]
     },
-    "runNumber": 74,
-    "playedAt": "2026-01-07T14:55:20.067178",
-    "playerResults": {
-      "B": {
-        "shuffledWords": [
-          "6",
-          "3",
-          "F",
-          "A",
-          "5",
-          "B",
-          "D",
-          "C",
-          "E",
-          "0",
-          "1",
-          "9",
-          "4",
-          "7",
-          "8",
-          "2"
-        ],
-        "guessedThemes": [],
-        "errors": 0,
-        "isFinished": false
-      }
-    }
+    "runNumber": 80,
+    "playedAt": "2026-01-07T16:20:05.331312",
+    "startTimeMillis": 1767799205331,
+    "players": {}
   },
   "-2": {
     "gameData": {
@@ -111,27 +88,28 @@
         }
       ]
     },
-    "runNumber": 66,
-    "playedAt": "2026-01-07T14:56:20.075602",
-    "playerResults": {
+    "runNumber": 69,
+    "playedAt": "2026-01-07T16:00:55.305235",
+    "startTimeMillis": 1767798055305,
+    "players": {
       "B": {
         "shuffledWords": [
-          "34",
-          "23",
+          "44",
           "31",
           "41",
-          "11",
-          "42",
-          "13",
-          "44",
-          "12",
-          "33",
-          "21",
-          "32",
           "14",
+          "33",
           "22",
+          "11",
           "43",
-          "24"
+          "34",
+          "12",
+          "13",
+          "24",
+          "42",
+          "32",
+          "21",
+          "23"
         ],
         "guessedThemes": [],
         "errors": 0,
@@ -181,27 +159,28 @@
         }
       ]
     },
-    "runNumber": 61,
-    "playedAt": "2026-01-07T14:52:20.039075",
-    "playerResults": {
+    "runNumber": 65,
+    "playedAt": "2026-01-07T16:01:55.313001",
+    "startTimeMillis": 1767798115313,
+    "players": {
       "B": {
         "shuffledWords": [
-          "D1",
-          "A1",
-          "A2",
+          "D3",
           "A4",
-          "B4",
-          "C1",
           "B3",
-          "D2",
-          "B1",
-          "A3",
-          "B2",
           "C3",
-          "D4",
+          "D2",
+          "A3",
           "C2",
+          "A2",
+          "B2",
+          "D4",
+          "B4",
+          "D1",
+          "C1",
           "C4",
-          "D3"
+          "B1",
+          "A1"
         ],
         "guessedThemes": [],
         "errors": 0,
@@ -251,33 +230,9 @@
         }
       ]
     },
-    "runNumber": 58,
-    "playedAt": "2026-01-07T14:53:20.048203",
-    "playerResults": {
-      "B": {
-        "shuffledWords": [
-          "CCC",
-          "DDD",
-          "BBB",
-          "BB",
-          "BBBB",
-          "B",
-          "CCCC",
-          "AAAA",
-          "C",
-          "AAA",
-          "D",
-          "AA",
-          "DD",
-          "A",
-          "DDDD",
-          "CC"
-        ],
-        "guessedThemes": [],
-        "errors": 0,
-        "isFinished": false
-      }
-    }
+    "runNumber": 60,
+    "playedAt": "2026-01-07T15:03:20.169600",
+    "startTimeMillis": 0
   },
   "-5": {
     "gameData": {
@@ -321,32 +276,8 @@
         }
       ]
     },
-    "runNumber": 55,
-    "playedAt": "2026-01-07T14:54:20.058495",
-    "playerResults": {
-      "B": {
-        "shuffledWords": [
-          "-",
-          ".",
-          "()",
-          "@",
-          "*",
-          "#",
-          ":",
-          ";",
-          "%",
-          ",",
-          "\u003c\u003e",
-          "/",
-          "[]",
-          "{}",
-          "+",
-          "$"
-        ],
-        "guessedThemes": [],
-        "errors": 0,
-        "isFinished": false
-      }
-    }
+    "runNumber": 57,
+    "playedAt": "2026-01-07T15:04:20.182276",
+    "startTimeMillis": 0
   }
 }

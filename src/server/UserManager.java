@@ -4,13 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import server.models.User;
-import server.models.UserStats;
 import server.ui.ServerLogger;
 import utils.ServerResponse.RankingEntry;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -18,131 +16,118 @@ import java.util.stream.Collectors;
 public class UserManager {
     private static UserManager instance;
     
-    // Mappa thread-safe per definizione. 
-    // Non serve 'synchronized' sui metodi di lettura semplici.
-    private ConcurrentHashMap<String, User> users; 
+    // MAPPA 1 (Storage): ID -> User
+    private ConcurrentHashMap<String, User> usersById; 
     
+    // MAPPA 2 (Indice): Username -> ID (Per login O(1))
+    private ConcurrentHashMap<String, String> usernameIndex;
+
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final String usersFilePath = ServerConfig.USERS_FILE_PATH;
-
-    // Lock specifico per operazioni che modificano la struttura delle chiavi (es. cambio username)
-    private final Object structuralLock = new Object();
+    
+    // Lock per operazioni strutturali (Register, UpdateUsername)
+    // Serve a garantire che due persone non prendano lo stesso nome contemporaneamente
+    private final Object writeLock = new Object();
 
     private UserManager() { 
+        usersById = new ConcurrentHashMap<>();
+        usernameIndex = new ConcurrentHashMap<>();
         loadUsers(); 
     }
 
-    // Singleton Thread-Safe classico
     public static synchronized UserManager getInstance() {
         if (instance == null) instance = new UserManager();
         return instance;
     }
 
-    // --- LOGICA UTENTI ---
+    // --- LOGICA ACCOUNT (Velocissima O(1)) ---
 
     public boolean login(String username, String password) {
-        User u = users.get(username);
-        // Controllo null-safe
-        return u != null && u.getPassword().equals(password);
+        // 1. Cerca ID nell'indice
+        String id = usernameIndex.get(username);
+        if (id == null) return false;
+
+        // 2. Cerca Utente nella mappa dati
+        User u = usersById.get(id);
+        return u != null && u.checkPassword(password);
     }
 
     public boolean register(String username, String password) {
-        // putIfAbsent è atomico: se la chiave esiste non fa nulla e ritorna il valore esistente.
-        // Se non esiste, inserisce e ritorna null.
-        // Molto più efficiente di containsKey + put in un blocco synchronized.
-        return users.putIfAbsent(username, new User(username, password)) == null;
+        synchronized (writeLock) {
+            // Controllo veloce sull'indice
+            if (usernameIndex.containsKey(username)) return false;
+
+            User newUser = new User(username, password);
+            
+            // Inserimento atomico (concettualmente)
+            usersById.put(newUser.getId(), newUser);
+            usernameIndex.put(username, newUser.getId());
+            
+            return true;
+        }
     }
 
     public boolean updateCredentials(String oldName, String newName, String oldPsw, String newPsw) {
-        // Operazione complessa: richiede consistenza tra rimozione e inserimento.
-        // Usiamo un lock specifico per non bloccare tutto il UserManager per operazioni banali.
-        synchronized (structuralLock) {
-            User u = users.get(oldName);
-            
-            // Verifica credenziali vecchie
-            if (u == null || !u.getPassword().equals(oldPsw)) return false;
+        synchronized (writeLock) {
+            // 1. Recupero Utente tramite Indice
+            String id = usernameIndex.get(oldName);
+            if (id == null) return false;
 
-            // CASO 1: Cambio Username (Critico)
+            User u = usersById.get(id);
+            if (u == null || !u.checkPassword(oldPsw)) return false;
+
+            // 2. Cambio Username (Parte delicata)
             if (newName != null && !newName.isEmpty() && !newName.equals(oldName)) {
-                if (users.containsKey(newName)) return false; // Nuovo nome occupato
+                // Controllo se il nuovo nome è libero
+                if (usernameIndex.containsKey(newName)) return false;
+
+                // AGGIORNAMENTO INDICE:
+                // Rimuovo la vecchia "etichetta"
+                usernameIndex.remove(oldName);
+                // Aggiungo la nuova "etichetta" che punta allo STESSO ID
+                usernameIndex.put(newName, id);
                 
-                // Creiamo nuovo utente mantenendo le statistiche
-                User newUser = new User(newName, (newPsw != null && !newPsw.isEmpty() ? newPsw : oldPsw));
-                newUser.setStats(u.getStats());
-                
-                // Swap atomico (protetto dal structuralLock)
-                users.remove(oldName);
-                users.put(newName, newUser);
-                return true;
-            } 
-            
-            // CASO 2: Solo Cambio Password
+                // Aggiorno il campo interno dell'oggetto User
+                u.setUsername(newName);
+            }
+
+            // 3. Cambio Password (Banale)
             if (newPsw != null && !newPsw.isEmpty()) {
                 u.setPassword(newPsw);
-                return true;
             }
+            
+            return true;
         }
-        return false;
     }
 
-    /**
-     * Aggiorna le statistiche a fine partita.
-     * Metodo Thread-Safe che usa computeIfPresent per garantire atomicità sull'aggiornamento.
-     * * @param username Nome utente
-     * @param points Punti calcolati (es. 18, 14, -4, etc.)
-     * @param won True se la partita è vinta, False se persa/tempo scaduto
-     */
-    public void updateGameResult(String username, int points, boolean won) {
-        users.computeIfPresent(username, (key, user) -> {
-            // Sincronizziamo sul singolo oggetto utente per evitare race conditions
-            // se lo stesso utente (assurdo ma possibile) finisse due partite simultaneamente.
-            synchronized (user) {
-                UserStats stats = user.getStats();
-                
-                stats.puzzlesPlayed++;
-                stats.totalScore += points; // Aggiorna punteggio totale (Rank)
-                
-                if (won) {
-                    stats.puzzlesWon++;
-                    stats.currentStreak++;
-                    if (stats.currentStreak > stats.maxStreak) {
-                        stats.maxStreak = stats.currentStreak;
-                    }
-                    // Aggiungi statistiche vittoria all'istogramma (assumendo che points/6 sia indicativo o gestito altrove)
-                    // Per semplicità qui aggiorniamo solo i contatori base, l'istogramma richiederebbe gli errori specifici
-                } else {
-                    stats.currentStreak = 0;
-                    stats.addLoss(); // Incrementa contatore sconfitte/distribuzione
-                }
-            }
-            return user;
-        });
+    // --- LOGICA GIOCO ---
+
+    public void updateGameResult(String username, int points, int errors, boolean won) {
+        // Look-up veloce O(1)
+        String id = usernameIndex.get(username);
+        if (id != null) {
+            // computeIfPresent è atomico sulla mappa ID
+            usersById.computeIfPresent(id, (k, user) -> {
+                if (won) user.addWin(errors, points);
+                else user.addLoss(points);
+                return user;
+            });
+        }
     }
     
-    // Gestione specifica per il TimeOut (se non gestito da updateGameResult generico)
     public void updateStatsTimeOut(String username) {
-        // Applichiamo la penalità base o 0 punti? 
-        // Se l'utente non ha fatto nulla prende 0. Se ha fatto errori sono già calcolati.
-        // Qui assumiamo un reset della streak e +1 giocata.
-        updateGameResult(username, 0, false);
+        updateGameResult(username, 0, 0, false);
     }
 
-    public UserStats getUserStats(String username) {
-        User u = users.get(username);
-        // Ritorniamo una copia o l'oggetto diretto? 
-        // Per performance ritorniamo l'oggetto, ma attenzione a modifiche concorrenti esterne.
-        return (u != null) ? u.getStats() : null;
+    public User getUser(String username) {
+        String id = usernameIndex.get(username);
+        return (id != null) ? usersById.get(id) : null;
     }
 
-    /**
-     * Genera la classifica basata sul PUNTEGGIO TOTALE (totalScore).
-     * @return Lista ordinata
-     */
     public List<RankingEntry> getLeaderboard() {
-        return users.values().stream()
-                // Ordina per Punteggio Totale decrescente
-                .sorted((u1, u2) -> Integer.compare(u2.getStats().totalScore, u1.getStats().totalScore))
-                .map(u -> new RankingEntry(0, u.getUsername(), u.getStats().totalScore))
+        return usersById.values().stream()
+                .sorted((u1, u2) -> Integer.compare(u2.getTotalScore(), u1.getTotalScore()))
+                .map(u -> new RankingEntry(0, u.getUsername(), u.getTotalScore()))
                 .collect(Collectors.toList());
     }
 
@@ -150,38 +135,36 @@ public class UserManager {
 
     private void loadUsers() {
         File file = new File(usersFilePath);
-        if (!file.exists()) {
-            users = new ConcurrentHashMap<>();
-            return;
-        }
-        
+        if (!file.exists()) return;
+
         try (FileReader reader = new FileReader(file)) {
+            // Carichiamo solo la mappa principale (ID -> User)
             Type type = new TypeToken<ConcurrentHashMap<String, User>>(){}.getType();
             ConcurrentHashMap<String, User> loaded = gson.fromJson(reader, type);
             
-            // Controllo robustezza
-            this.users = (loaded != null) ? loaded : new ConcurrentHashMap<>();
-            ServerLogger.info("Caricati " + users.size() + " utenti.");
-            
-        } catch (IOException e) { 
-            users = new ConcurrentHashMap<>(); 
+            if (loaded != null) {
+                this.usersById = loaded;
+                
+                // *** RICOSTRUZIONE DELL'INDICE ***
+                // Iteriamo sugli utenti caricati e ripopoliamo la mappa Username -> ID
+                this.usernameIndex.clear();
+                for (User u : usersById.values()) {
+                    this.usernameIndex.put(u.getUsername(), u.getId());
+                }
+                ServerLogger.info("Caricati " + usersById.size() + " utenti (Indice ricostruito).");
+            }
+        } catch (IOException e) {
             ServerLogger.error("Errore caricamento utenti: " + e.getMessage());
         }
     }
 
     public void saveData() {
-        if (usersFilePath == null || users == null) return;
-        
-        // Salvataggio snapshot
+        if (usersById == null) return;
         try (FileWriter writer = new FileWriter(usersFilePath)) { 
-            gson.toJson(users, writer); 
+            // Salviamo solo la mappa vera (ID -> User). L'indice si rifà da solo.
+            gson.toJson(usersById, writer); 
         } catch (IOException e) { 
             ServerLogger.error("Errore salvataggio utenti: " + e.getMessage()); 
         }
-    }
-    
-    // Metodo helper per test/debug
-    public void reset() {
-        users.clear();
     }
 }

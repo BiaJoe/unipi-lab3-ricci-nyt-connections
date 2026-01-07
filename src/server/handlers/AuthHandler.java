@@ -3,7 +3,7 @@ package server.handlers;
 import server.GameManager;
 import server.UserManager;
 import server.models.ClientSession;
-import server.models.Game;
+import server.models.GameMatch;
 import server.models.PlayerGameState;
 import server.ui.ServerLogger;
 import utils.ClientRequest;
@@ -11,7 +11,6 @@ import utils.ServerResponse;
 
 public class AuthHandler {
 
-    // MODIFICATO: Ora richiede ClientSession per fare l'auto-login
     public static String handleRegister(ClientRequest.Register req, ClientSession session) {
         if (req.name == null || req.psw == null) return ResponseUtils.error("Dati mancanti", 401);
         
@@ -19,67 +18,54 @@ public class AuthHandler {
         if (ok) {
             ServerLogger.info("Nuovo utente registrato: " + req.name);
             
-            // --- AUTO LOGIN LOGIC ---
-            // 1. Attiviamo il login nel UserManager
+            // 1. Auto Login
             UserManager.getInstance().login(req.name, req.psw);
             
             // 2. Setup Sessione
             session.setUsername(req.name);
             session.setLoggedIn(true);
-            // Nota: La request di registrazione non ha porta UDP, quindi sarà 0 di default.
             session.setUdpPort(0); 
 
-            // 3. Binding dello stato di gioco
-            Game current = GameManager.getInstance().getCurrentGame();
+            // 3. Binding Match Corrente (se esiste)
+            GameMatch currentMatch = GameManager.getInstance().getCurrentMatch();
             ServerResponse.GameInfoData infoData = null;
             
-            if (current != null) {
-                PlayerGameState pState = GameManager.getInstance().getOrCreatePlayerState(req.name);
+            if (currentMatch != null) {
+                PlayerGameState pState = currentMatch.getOrCreatePlayerState(req.name);
                 session.bindState(pState);
                 
-                // Creiamo il pacchetto dati di gioco completo
-                infoData = InfoHandler.buildGameInfoData(current, session);
+                // Costruiamo la scheda iniziale
+                infoData = InfoHandler.buildGameInfoData(currentMatch, session);
             }
             
-            // Restituiamo una AUTH response invece di un OK generico
-            ServerResponse.Auth resp = new ServerResponse.Auth("Registrazione avvenuta. Benvenuto!", infoData);
-            return ResponseUtils.toJson(resp);
+            return ResponseUtils.toJson(new ServerResponse.Auth("Registrazione avvenuta. Benvenuto!", infoData));
             
         } else {
             return ResponseUtils.error("Username già in uso", 402);
         }
     }
 
-    public static String handleUpdateCredentials(ClientRequest.UpdateCredentials req) {
-        boolean ok = UserManager.getInstance().updateCredentials(req.oldName, req.newName, req.oldPsw, req.newPsw);
-        if (ok) return ResponseUtils.success("Credenziali aggiornate");
-        else return ResponseUtils.error("Errore aggiornamento (credenziali errate o username occupato)", 403);
-    }
-
     public static String handleLogin(ClientRequest.Login req, ClientSession session) {
         if (session.isLoggedIn()) return ResponseUtils.error("Già loggato", 405);
         
         if (UserManager.getInstance().login(req.username, req.psw)) {
-            // Setup Sessione
             session.setUsername(req.username);
             session.setLoggedIn(true);
             if (req.udpPort > 0) session.setUdpPort(req.udpPort);
             
             ServerLogger.info("Utente loggato: " + req.username);
 
-            // Binding dello stato di gioco
-            Game current = GameManager.getInstance().getCurrentGame();
+            GameMatch currentMatch = GameManager.getInstance().getCurrentMatch();
             ServerResponse.GameInfoData infoData = null;
             
-            if (current != null) {
-                PlayerGameState pState = GameManager.getInstance().getOrCreatePlayerState(req.username);
+            if (currentMatch != null) {
+                PlayerGameState pState = currentMatch.getOrCreatePlayerState(req.username);
                 session.bindState(pState);
                 
-                infoData = InfoHandler.buildGameInfoData(current, session);
+                infoData = InfoHandler.buildGameInfoData(currentMatch, session);
             }
             
-            ServerResponse.Auth resp = new ServerResponse.Auth("Login effettuato", infoData);
-            return ResponseUtils.toJson(resp);
+            return ResponseUtils.toJson(new ServerResponse.Auth("Login effettuato", infoData));
         }
         return ResponseUtils.error("Credenziali errate", 401);
     }
@@ -94,5 +80,11 @@ public class AuthHandler {
         session.bindState(null); 
         
         return ResponseUtils.success("Logout effettuato");
+    }
+    
+    public static String handleUpdateCredentials(ClientRequest.UpdateCredentials req) {
+        boolean ok = UserManager.getInstance().updateCredentials(req.oldName, req.newName, req.oldPsw, req.newPsw);
+        if (ok) return ResponseUtils.success("Credenziali aggiornate");
+        else return ResponseUtils.error("Errore: credenziali errate o nuovo username occupato", 403);
     }
 }
