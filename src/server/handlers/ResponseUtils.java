@@ -6,22 +6,17 @@ import utils.ServerResponse;
 public class ResponseUtils {
     private static final Gson gson = new Gson();
 
+    // Genera una risposta di Errore standard
     public static String error(String msg, int code) {
-        ServerResponse r = new ServerResponse();
-        r.status = "ERROR";
-        r.message = msg;
-        r.errorCode = code;
-        return gson.toJson(r);
+        return gson.toJson(new ServerResponse.Error(msg, code));
     }
 
+    // Genera una risposta OK Generica (solo messaggio)
     public static String success(String msg) {
-        ServerResponse r = new ServerResponse();
-        r.status = "OK";
-        r.message = msg;
-        return gson.toJson(r);
+        return gson.toJson(new ServerResponse.Generic(msg));
     }
 
-    // Helper per convertire qualsiasi oggetto risposta in JSON
+    // Serializza qualsiasi oggetto ServerResponse (Auth, Stats, ecc.)
     public static String toJson(ServerResponse resp) {
         return gson.toJson(resp);
     }

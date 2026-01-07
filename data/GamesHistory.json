@@ -1,0 +1,352 @@
+{
+  "-1": {
+    "gameData": {
+      "gameId": -1,
+      "groups": [
+        {
+          "theme": "NUMERI 0-3",
+          "words": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "theme": "NUMERI 4-7",
+          "words": [
+            "4",
+            "5",
+            "6",
+            "7"
+          ]
+        },
+        {
+          "theme": "NUMERI 8-B",
+          "words": [
+            "8",
+            "9",
+            "A",
+            "B"
+          ]
+        },
+        {
+          "theme": "LETTERE C-F",
+          "words": [
+            "C",
+            "D",
+            "E",
+            "F"
+          ]
+        }
+      ]
+    },
+    "runNumber": 74,
+    "playedAt": "2026-01-07T14:55:20.067178",
+    "playerResults": {
+      "B": {
+        "shuffledWords": [
+          "6",
+          "3",
+          "F",
+          "A",
+          "5",
+          "B",
+          "D",
+          "C",
+          "E",
+          "0",
+          "1",
+          "9",
+          "4",
+          "7",
+          "8",
+          "2"
+        ],
+        "guessedThemes": [],
+        "errors": 0,
+        "isFinished": false
+      }
+    }
+  },
+  "-2": {
+    "gameData": {
+      "gameId": -2,
+      "groups": [
+        {
+          "theme": "DECINA 10",
+          "words": [
+            "11",
+            "12",
+            "13",
+            "14"
+          ]
+        },
+        {
+          "theme": "DECINA 20",
+          "words": [
+            "21",
+            "22",
+            "23",
+            "24"
+          ]
+        },
+        {
+          "theme": "DECINA 30",
+          "words": [
+            "31",
+            "32",
+            "33",
+            "34"
+          ]
+        },
+        {
+          "theme": "DECINA 40",
+          "words": [
+            "41",
+            "42",
+            "43",
+            "44"
+          ]
+        }
+      ]
+    },
+    "runNumber": 66,
+    "playedAt": "2026-01-07T14:56:20.075602",
+    "playerResults": {
+      "B": {
+        "shuffledWords": [
+          "34",
+          "23",
+          "31",
+          "41",
+          "11",
+          "42",
+          "13",
+          "44",
+          "12",
+          "33",
+          "21",
+          "32",
+          "14",
+          "22",
+          "43",
+          "24"
+        ],
+        "guessedThemes": [],
+        "errors": 0,
+        "isFinished": false
+      }
+    }
+  },
+  "-3": {
+    "gameData": {
+      "gameId": -3,
+      "groups": [
+        {
+          "theme": "SERIE A",
+          "words": [
+            "A1",
+            "A2",
+            "A3",
+            "A4"
+          ]
+        },
+        {
+          "theme": "SERIE B",
+          "words": [
+            "B1",
+            "B2",
+            "B3",
+            "B4"
+          ]
+        },
+        {
+          "theme": "SERIE C",
+          "words": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ]
+        },
+        {
+          "theme": "SERIE D",
+          "words": [
+            "D1",
+            "D2",
+            "D3",
+            "D4"
+          ]
+        }
+      ]
+    },
+    "runNumber": 61,
+    "playedAt": "2026-01-07T14:52:20.039075",
+    "playerResults": {
+      "B": {
+        "shuffledWords": [
+          "D1",
+          "A1",
+          "A2",
+          "A4",
+          "B4",
+          "C1",
+          "B3",
+          "D2",
+          "B1",
+          "A3",
+          "B2",
+          "C3",
+          "D4",
+          "C2",
+          "C4",
+          "D3"
+        ],
+        "guessedThemes": [],
+        "errors": 0,
+        "isFinished": false
+      }
+    }
+  },
+  "-4": {
+    "gameData": {
+      "gameId": -4,
+      "groups": [
+        {
+          "theme": "LETTERE SINGOLE",
+          "words": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "theme": "LETTERE DOPPIE",
+          "words": [
+            "AA",
+            "BB",
+            "CC",
+            "DD"
+          ]
+        },
+        {
+          "theme": "LETTERE TRIPLE",
+          "words": [
+            "AAA",
+            "BBB",
+            "CCC",
+            "DDD"
+          ]
+        },
+        {
+          "theme": "LETTERE QUADRUPLE",
+          "words": [
+            "AAAA",
+            "BBBB",
+            "CCCC",
+            "DDDD"
+          ]
+        }
+      ]
+    },
+    "runNumber": 58,
+    "playedAt": "2026-01-07T14:53:20.048203",
+    "playerResults": {
+      "B": {
+        "shuffledWords": [
+          "CCC",
+          "DDD",
+          "BBB",
+          "BB",
+          "BBBB",
+          "B",
+          "CCCC",
+          "AAAA",
+          "C",
+          "AAA",
+          "D",
+          "AA",
+          "DD",
+          "A",
+          "DDDD",
+          "CC"
+        ],
+        "guessedThemes": [],
+        "errors": 0,
+        "isFinished": false
+      }
+    }
+  },
+  "-5": {
+    "gameData": {
+      "gameId": -5,
+      "groups": [
+        {
+          "theme": "SIMBOLI MATEMATICI",
+          "words": [
+            "+",
+            "-",
+            "*",
+            "/"
+          ]
+        },
+        {
+          "theme": "PUNTEGGIATURA",
+          "words": [
+            ".",
+            ",",
+            ";",
+            ":"
+          ]
+        },
+        {
+          "theme": "SPECIALI",
+          "words": [
+            "@",
+            "#",
+            "$",
+            "%"
+          ]
+        },
+        {
+          "theme": "PARENTESI",
+          "words": [
+            "()",
+            "[]",
+            "{}",
+            "\u003c\u003e"
+          ]
+        }
+      ]
+    },
+    "runNumber": 55,
+    "playedAt": "2026-01-07T14:54:20.058495",
+    "playerResults": {
+      "B": {
+        "shuffledWords": [
+          "-",
+          ".",
+          "()",
+          "@",
+          "*",
+          "#",
+          ":",
+          ";",
+          "%",
+          ",",
+          "\u003c\u003e",
+          "/",
+          "[]",
+          "{}",
+          "+",
+          "$"
+        ],
+        "guessedThemes": [],
+        "errors": 0,
+        "isFinished": false
+      }
+    }
+  }
+}

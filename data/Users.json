@@ -3,7 +3,7 @@
     "username": "A",
     "password": "B",
     "stats": {
-      "puzzlesPlayed": 31,
+      "puzzlesPlayed": 190,
       "puzzlesWon": 1,
       "currentStreak": 0,
       "maxStreak": 1,
@@ -19,14 +19,62 @@
     "username": "B",
     "password": "M",
     "stats": {
-      "puzzlesPlayed": 293,
-      "puzzlesWon": 7,
+      "puzzlesPlayed": 617,
+      "puzzlesWon": 12,
       "currentStreak": 0,
       "maxStreak": 3,
       "winDistribution": [
-        4,
+        9,
         2,
         1,
+        0
+      ]
+    }
+  },
+  "2": {
+    "username": "2",
+    "password": "3",
+    "stats": {
+      "puzzlesPlayed": 2,
+      "puzzlesWon": 1,
+      "currentStreak": 1,
+      "maxStreak": 1,
+      "winDistribution": [
+        1,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "Bianco": {
+    "username": "Bianco",
+    "password": "Nero",
+    "stats": {
+      "puzzlesPlayed": 0,
+      "puzzlesWon": 0,
+      "currentStreak": 0,
+      "maxStreak": 0,
+      "winDistribution": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "H": {
+    "username": "H",
+    "password": "M",
+    "stats": {
+      "puzzlesPlayed": 3,
+      "puzzlesWon": 0,
+      "currentStreak": 0,
+      "maxStreak": 0,
+      "winDistribution": [
+        0,
+        0,
+        0,
         0
       ]
     }
