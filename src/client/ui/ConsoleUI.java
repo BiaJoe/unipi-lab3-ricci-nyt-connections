@@ -10,8 +10,6 @@ import java.util.*;
 
 public class ConsoleUI implements ClientRenderer {
     private final String trophyFile;
-    
-    // ANSI Colors
     private static final String RESET = "\033[0m";
     private static final String CYAN = "\033[0;36m";
     private static final String RED = "\033[0;31m";
@@ -24,9 +22,7 @@ public class ConsoleUI implements ClientRenderer {
     }
 
     @Override
-    public void init() {
-        System.out.println(CYAN + "###### The New New York Times Connections ######" + RESET);
-    }
+    public void init() { System.out.println(CYAN + "###### CONNECTIONS CLIENT ######" + RESET); }
 
     public void runInputLoop(CommandProcessor processor) {
         processor.processInput("/help");
@@ -40,13 +36,9 @@ public class ConsoleUI implements ClientRenderer {
         }
     }
 
-    // --- IMPLEMENTAZIONE VISUALIZZAZIONE ---
-
     @Override
     public void showHelp(Collection<Command> commands) {
         System.out.println("\n" + CYAN + "=== COMANDI DISPONIBILI ===" + RESET);
-        System.out.printf("  %-10s %-35s %s\n", "ALIAS", "COMANDO", "DESCRIZIONE");
-        System.out.println("  ----------------------------------------------------------------");
         for (Command cmd : commands) {
             String aliasDisplay = (cmd.alias == null || cmd.alias.isEmpty()) ? "" : "/" + cmd.alias;
             System.out.printf("  " + YELLOW + "%-10s" + RESET + " %-35s %s\n", aliasDisplay, cmd.getUsage(), cmd.description);
@@ -55,132 +47,101 @@ public class ConsoleUI implements ClientRenderer {
     }
 
     @Override
-    public void showMessage(String msg) {
-        System.out.println(GREEN + "[INFO] " + msg + RESET);
-        printPrompt();
-    }
-
+    public void showMessage(String msg) { System.out.println("[INFO] " + msg); printPrompt(); }
     @Override
-    public void showError(String err) {
-        System.out.println(RED + "[!] " + err + RESET);
-        printPrompt();
-    }
+    public void showError(String err) { System.out.println(RED + "[ERROR] " + err + RESET); printPrompt(); }
 
     @Override
     public void showGameInfo(ServerResponse.GameInfoData info) {
-        System.out.println("\n" + YELLOW + "--- PARTITA #" + info.gameId + " ---" + RESET);
-        
-        boolean victory = (info.correctGroups != null && info.correctGroups.size() == 4);
-        
-        // Se la partita è finita (o tempo scaduto)
-        if (Boolean.TRUE.equals(info.isFinished) || info.timeLeft <= 0) {
-            String esito;
-            if (victory) {
-                esito = GREEN + "VITTORIA!" + RESET;
-            } else {
-                esito = RED + "PERSO (Tempo scaduto o troppi errori)" + RESET;
-            }
-            
-            System.out.println(CYAN + "Stato: " + esito + " | Punti Finali: " + info.currentScore);
-        } else {
-            // Partita in corso
-            System.out.printf("Tempo: %ds | Punti: %d | Errori: %d/4\n", info.timeLeft, info.currentScore, info.mistakes);
-        }
-        // ---------------------------
-
-        if (info.words != null && !info.words.isEmpty()) {
-            printGrid(info.words, info.correctGroups);
-        }
-
-        // Mostra soluzione se presente (di solito quando finisce)
-        if (Boolean.TRUE.equals(info.isFinished) && info.solution != null) {
-            System.out.println("\n" + PURPLE + "=== SOLUZIONE ===" + RESET);
-            for (var g : info.solution) System.out.println(" * " + g.theme + ": " + g.words);
-        }
-
-        // Mostra classifica partita
-        if (info.playerResults != null && !info.playerResults.isEmpty()) {
-            System.out.println("\n" + PURPLE + "=== PARTECIPANTI ===" + RESET);
-            for (var p : info.playerResults) {
-                String esito = p.won ? (GREEN + "VITTORIA" + RESET) : (RED + "PERSO" + RESET);
-                System.out.printf(" - %-15s: %s (Punti: %d)\n", p.username, esito, p.score);
-            }
-        }
+        System.out.println("\n" + YELLOW + "--- STATO PARTITA ---" + RESET);
+        System.out.println("ID Partita: " + info.gameId);
+        System.out.println("Tempo Rimanente: " + info.timeLeft + "s");
+        System.out.println("Errori Commessi: " + info.mistakes);
+        System.out.println("Punteggio Attuale: " + info.currentScore);
+        System.out.println("Partita Finita: " + info.isFinished);
+        if (info.words != null && !info.words.isEmpty()) { System.out.println("\n--- GRIGLIA ---"); printGrid(info.words, info.correctGroups); }
+        if (info.correctGroups != null && !info.correctGroups.isEmpty()) { System.out.println("\n--- TUOI GRUPPI ---"); for(var g : info.correctGroups) System.out.println(" * " + g.theme + ": " + g.words); }
+        if (info.solution != null) { System.out.println("\n--- SOLUZIONE COMPLETA ---"); for (var g : info.solution) System.out.println(" * " + g.theme + ": " + g.words); }
+        if (info.playerResults != null) { System.out.println("\n--- CLASSIFICA PARTITA ---"); for (var p : info.playerResults) System.out.println(" - User: " + p.username + " | Score: " + p.score + " | Won: " + p.won); }
         printPrompt();
     }
 
     @Override
     public void showSubmitResult(ServerResponse.Proposal p) {
-        if (Boolean.TRUE.equals(p.isCorrect)) {
-            System.out.println(GREEN + ">>> ESATTO! Gruppo: " + p.groupTitle + RESET);
-            
-            // --- FIX TROFEO ---
-            // Se il tentativo è corretto E la partita è finita -> Hai vinto!
-            if (Boolean.TRUE.equals(p.isFinished)) {
-                System.out.println(GREEN + "\n" + p.message + RESET); // Stampa "VITTORIA!" dal server
-                printFile(trophyFile);
-            }
-            // ------------------
-            
-        } else {
-            System.out.println(RED + ">>> SBAGLIATO!" + RESET);
-            if (Boolean.TRUE.equals(p.isFinished)) {
-                System.out.println(RED + "\n" + p.message + RESET); // Stampa "HAI PERSO"
-            }
-        }
-        
-        // Se la proposta porta alla fine della partita e contiene la soluzione (JSON aggiornato), stampala subito
-        if (Boolean.TRUE.equals(p.isFinished) && p.solution != null) {
-             System.out.println("\n" + PURPLE + "=== SOLUZIONE ===" + RESET);
-             for (var g : p.solution) System.out.println(" * " + g.theme + ": " + g.words);
-        }
-        
+        System.out.println("\n" + YELLOW + "--- ESITO TENTATIVO ---" + RESET);
+        System.out.println("Corretto: " + p.isCorrect);
+        System.out.println("Messaggio: " + p.message);
+        if (p.groupTitle != null) System.out.println("Gruppo Trovato: " + p.groupTitle);
+        if (p.currentScore != null) System.out.println("Punteggio Aggiornato: " + p.currentScore);
+        if (p.isFinished != null) System.out.println("Partita Finita: " + p.isFinished);
+        if (Boolean.TRUE.equals(p.isFinished) && Boolean.TRUE.equals(p.isCorrect)) { System.out.println(GREEN + "VITTORIA!" + RESET); printFile(trophyFile); }
+        if (p.solution != null) { System.out.println("\n--- SOLUZIONE ---"); for (var g : p.solution) System.out.println(" * " + g.theme + ": " + g.words); }
         printPrompt();
     }
 
     @Override
     public void showGameStats(ServerResponse.GameStats s) {
-        System.out.println("\n" + CYAN + "=== STATISTICHE PARTITA #" + s.gameId + " ===" + RESET);
-        if (s.playersActive != null) System.out.println("Giocatori Attivi: " + s.playersActive);
-        if (s.playersFinished != null) System.out.println("Partite Concluse: " + s.playersFinished);
-        if (s.playersWon != null) System.out.println("Vittorie: " + GREEN + s.playersWon + RESET);
-        if (s.averageScore != null) System.out.printf("Punteggio Medio: %.2f\n", s.averageScore);
+        System.out.println("\n" + CYAN + "=== GAME STATS ===" + RESET);
+        System.out.println("Game ID: " + s.gameId);
+        System.out.println("Time Left: " + s.timeLeft);
+        System.out.println("Players Active: " + s.playersActive);
+        System.out.println("Players Finished: " + s.playersFinished);
+        System.out.println("Players Won: " + s.playersWon);
+        System.out.println("Avg Score: " + s.averageScore);
         printPrompt();
     }
 
     @Override
     public void showPlayerStats(ServerResponse.PlayerStats s) {
-        System.out.println("\n" + PURPLE + "=== LE TUE STATISTICHE ===" + RESET);
-        System.out.printf("Partite: %d | Win Rate: %.1f%%\n", s.puzzlesCompleted, s.winRate); // winRate è già float 0-100 lato server ora? o 0-1? Controlla server.
-        // Nel server era: resp.winRate = (won/played) * 100.0f; -> Quindi qui stampiamo diretto
-        System.out.printf("Streak: %d (Max: %d) | Perfect: %d\n", s.currentStreak, s.maxStreak, s.perfectPuzzles);
-        
-        System.out.println("\n" + YELLOW + "Istogramma Errori:" + RESET);
-        if (s.mistakeHistogram != null) {
-            for (int i = 0; i < s.mistakeHistogram.length; i++) {
-                String label = (i == 4) ? "Perso" : (i + " Err ");
-                String bar = "█".repeat(Math.max(0, s.mistakeHistogram[i]));
-                System.out.printf(" %s | %s (%d)\n", label, GREEN + bar + RESET, s.mistakeHistogram[i]);
-            }
-        }
+        System.out.println("\n" + PURPLE + "=== PLAYER STATS ===" + RESET);
+        System.out.println("Puzzles Completed: " + s.puzzlesCompleted);
+        System.out.println("Win Rate: " + s.winRate + "%");
+        System.out.println("Loss Rate: " + s.lossRate + "%");
+        System.out.println("Current Streak: " + s.currentStreak);
+        System.out.println("Max Streak: " + s.maxStreak);
+        System.out.println("Perfect Puzzles: " + s.perfectPuzzles);
+        if (s.mistakeHistogram != null) System.out.println("Mistake Histogram (0->4+): " + Arrays.toString(s.mistakeHistogram));
         printPrompt();
     }
 
     @Override
     public void showLeaderboard(ServerResponse.Leaderboard l) {
-        System.out.println("\n" + YELLOW + "=== CLASSIFICA ===" + RESET);
-        if (l.ranking != null) {
-            for (var r : l.ranking) {
-                String color = (r.position <= 3) ? GREEN : RESET; 
-                System.out.printf("%s#%d %-15s (%d pt)%s\n", color, r.position, r.username, r.score, RESET);
-            }
-        }
+        System.out.println("\n" + YELLOW + "=== LEADERBOARD ===" + RESET);
+        if (l.ranking != null && !l.ranking.isEmpty()) for (var r : l.ranking) System.out.println("#" + r.position + " " + r.username + " (" + r.score + " pts)");
+        else System.out.println("Nessun dato.");
         printPrompt();
     }
 
     @Override
-    public void showNotification(String message) {
-        System.out.println("\n" + CYAN + "[NOTIFICA] " + message + RESET);
+    public void showNotification(String message) { System.out.println("\n" + CYAN + "[UDP EVENT] " + message + RESET); printPrompt(); }
+
+    @Override
+    public void showAdminInfo(ServerResponse.AdminInfo info) {
+        System.out.println(RED + "\n[ADMIN CONSOLE]" + RESET);
+
+        // Caso 1: GOD MODE (Lista Utenti)
+        if (info.userList != null) {
+            System.out.println(CYAN + "=== UTENTI REGISTRATI ===" + RESET);
+            System.out.printf("%-15s | %-15s | %-6s | %-6s | %-6s%n", "USERNAME", "PASSWORD", "SCORE", "PLAYED", "WON");
+            System.out.println("----------------------------------------------------------------");
+            for (var u : info.userList) {
+                System.out.printf("%-15s | %-15s | %-6d | %-6d | %-6d%n", u.username, u.password, u.totalScore, u.played, u.won);
+            }
+        } 
+        // Caso 2: ORACLE (Lista Gruppi) - FORMATO RICHIESTO
+        else if (info.oracleData != null) {
+            System.out.println(CYAN + "=== SOLUZIONE CORRENTE ===" + RESET);
+            for (var group : info.oracleData) {
+                // Formato: <NOME GRUPPO> <parola1> <parola2> <parola3> <parola4>
+                String wordsLine = String.join(" ", group.words);
+                System.out.println(YELLOW + group.theme + RESET + " " + wordsLine);
+            }
+        }
+        // Caso 3: Payload testuale generico (Fallback)
+        else if (info.adminPayload != null) {
+            System.out.println(info.adminPayload);
+        }
+        
         printPrompt();
     }
 
@@ -188,34 +149,23 @@ public class ConsoleUI implements ClientRenderer {
     
     private void printGrid(List<String> words, List<ServerResponse.GroupData> correctGroups) {
         Set<String> guessedWords = new HashSet<>();
-        if (correctGroups != null) {
-            for (var g : correctGroups) {
-                if (g.words != null) guessedWords.addAll(g.words);
-            }
-        }
-
+        if (correctGroups != null) for (var g : correctGroups) if (g.words != null) guessedWords.addAll(g.words);
         int maxLen = 0;
         for (String w : words) if (w != null) maxLen = Math.max(maxLen, w.length());
-        
         System.out.println();
         for (int i = 0; i < words.size(); i++) {
             String w = words.get(i);
-            String displayVal = (w == null) ? "???" : w;
-            String color = guessedWords.contains(w) ? GREEN : RESET; // Verde se indovinata
-            
-            System.out.print(color + String.format("%-" + (maxLen + 2) + "s", displayVal) + RESET);
-            
+            String val = (w == null) ? "?" : w;
+            if (guessedWords.contains(w)) System.out.print(GREEN + String.format("%-" + (maxLen + 2) + "s", val) + RESET);
+            else System.out.print(String.format("%-" + (maxLen + 2) + "s", val));
             if ((i + 1) % 4 == 0) System.out.println();
         }
-        System.out.println(); 
     }
     
     private void printFile(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = br.readLine()) != null) System.out.println(YELLOW + line + RESET);
-        } catch (IOException e) { 
-             System.out.println(YELLOW + "[FILE STAMPATO]" + RESET);
-        }
+        } catch (IOException e) { System.out.println("[TROPHY]"); }
     }
 }

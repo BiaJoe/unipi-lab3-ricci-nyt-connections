@@ -32,28 +32,22 @@ public class ClientMain {
             ui.showMessage("Connesso al server " + config.serverAddress + ":" + config.serverPort);
 
             // 5. Setup Logic (CommandProcessor)
-            // Nota: CommandProcessor usa (NetworkManager, ClientRenderer)
             CommandProcessor commands = new CommandProcessor(net, ui);
 
             // 6. Avvio Thread di Ascolto
-            // TcpListener vuole (net, ui, bufferSize)
             new Thread(new TcpListener(net, ui, config.tcpBufferSize)).start();
             
             // UdpListener vuole (net, ui, bufferSize)
             new Thread(new UdpListener(net, ui, config.udpBufferSize)).start();
 
-            // NOTA: SyncAndRenderThread è stato rimosso perché la UI è a eventi ora.
-
             // 7. Loop di Input
-            // Deleghiamo alla UI la gestione del loop di lettura per mantenere il main pulito
-            // e gestire correttamente il prompt "> "
             ui.runInputLoop(commands);
 
         } catch (IOException e) {
             ui.showError("Impossibile connettersi al server: " + e.getMessage());
         } finally {
             net.close();
-            System.out.println("Client chiuso.");
+            System.out.println("Client chiuso. Alla prossima!");
         }
     }
 }

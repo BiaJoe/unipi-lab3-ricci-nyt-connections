@@ -3,34 +3,34 @@
     "id": "d98a4a6e-ffad-46e3-82db-d5f7217ee994",
     "username": "B",
     "password": "M",
-    "puzzlesPlayed": 23,
+    "puzzlesPlayed": 13,
     "puzzlesWon": 3,
-    "currentStreak": 0,
+    "currentStreak": 1,
     "maxStreak": 1,
-    "totalScore": 40,
+    "totalScore": 30,
     "winDistribution": [
+      1,
       0,
       1,
-      2,
       0,
-      20
+      10
     ]
   },
-  "b9adea29-5d60-4187-897e-da57de51505d": {
-    "id": "b9adea29-5d60-4187-897e-da57de51505d",
-    "username": "b",
-    "password": "m",
-    "puzzlesPlayed": 29,
-    "puzzlesWon": 5,
+  "7c7d9048-390b-455b-b0a1-ed6347faf69c": {
+    "id": "7c7d9048-390b-455b-b0a1-ed6347faf69c",
+    "username": "1",
+    "password": "2",
+    "puzzlesPlayed": 5,
+    "puzzlesWon": 1,
     "currentStreak": 0,
     "maxStreak": 1,
-    "totalScore": 50,
+    "totalScore": 10,
     "winDistribution": [
       0,
+      0,
       1,
-      2,
-      1,
-      24
+      0,
+      4
     ]
   }
 }

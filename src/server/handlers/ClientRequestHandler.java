@@ -6,68 +6,54 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import server.models.ClientSession;
 import utils.ClientRequest;
+import utils.ResponseCodes;
 
 public class ClientRequestHandler {
     private static final Gson gson = new Gson();
 
     public static String handleRequest(String jsonInput, ClientSession session) {
-        if (jsonInput == null || jsonInput.isEmpty()) {
-            return ResponseUtils.error("Richiesta vuota", 400);
-        }
+        if (jsonInput == null || jsonInput.isEmpty()) return ResponseUtils.error("Richiesta vuota", ResponseCodes.BAD_REQUEST);
 
         try {
-            // Parsing preliminare per leggere "operation"
             JsonObject root = JsonParser.parseString(jsonInput).getAsJsonObject();
-            if (!root.has("operation")) {
-                return ResponseUtils.error("Campo 'operation' mancante", 400);
-            }
+            if (!root.has("operation")) return ResponseUtils.error("Campo 'operation' mancante", ResponseCodes.BAD_REQUEST);
 
             String op = root.get("operation").getAsString();
 
-            // Routing
             switch (op) {
                 case "register":
-                    ClientRequest.Register reqReg = gson.fromJson(jsonInput, ClientRequest.Register.class);
-                    return AuthHandler.handleRegister(reqReg, session);
-
+                    return AuthHandler.handleRegister(gson.fromJson(jsonInput, ClientRequest.Register.class), session);
                 case "login":
-                    ClientRequest.Login reqLogin = gson.fromJson(jsonInput, ClientRequest.Login.class);
-                    return AuthHandler.handleLogin(reqLogin, session);
-
+                    return AuthHandler.handleLogin(gson.fromJson(jsonInput, ClientRequest.Login.class), session);
                 case "logout":
                     return AuthHandler.handleLogout(session);
-
                 case "updateCredentials":
-                    ClientRequest.UpdateCredentials reqUpd = gson.fromJson(jsonInput, ClientRequest.UpdateCredentials.class);
-                    return AuthHandler.handleUpdateCredentials(reqUpd);
-
+                    return AuthHandler.handleUpdateCredentials(gson.fromJson(jsonInput, ClientRequest.UpdateCredentials.class));
                 case "submitProposal":
-                    ClientRequest.SubmitProposal reqSub = gson.fromJson(jsonInput, ClientRequest.SubmitProposal.class);
-                    return GameHandler.handleSubmitProposal(reqSub, session);
-
+                    return GameHandler.handleSubmitProposal(gson.fromJson(jsonInput, ClientRequest.SubmitProposal.class), session);
                 case "requestGameInfo":
-                    ClientRequest.GameInfo reqInfo = gson.fromJson(jsonInput, ClientRequest.GameInfo.class);
-                    return InfoHandler.handleRequestGameInfo(reqInfo, session);
-
+                    return InfoHandler.handleRequestGameInfo(gson.fromJson(jsonInput, ClientRequest.GameInfo.class), session);
                 case "requestGameStats":
-                    ClientRequest.GameInfo reqGStats = gson.fromJson(jsonInput, ClientRequest.GameInfo.class);
-                    return StatsHandler.handleRequestGameStats(reqGStats, session);
-
+                    return StatsHandler.handleRequestGameStats(gson.fromJson(jsonInput, ClientRequest.RequestGameStats.class), session);
                 case "requestPlayerStats":
                     return StatsHandler.handleRequestPlayerStats(session);
-
                 case "requestLeaderboard":
-                    return StatsHandler.handleRequestLeaderboard(session);
+                    return StatsHandler.handleRequestLeaderboard(gson.fromJson(jsonInput, ClientRequest.Leaderboard.class), session);
+                
+                // --- ADMIN ---
+                case "oracle":
+                    return AdminHandler.handleOracle(gson.fromJson(jsonInput, ClientRequest.Oracle.class), session);
+                case "god":
+                    return AdminHandler.handleGod(gson.fromJson(jsonInput, ClientRequest.God.class));
 
                 default:
-                    return ResponseUtils.error("Operazione sconosciuta: " + op, 400);
+                    return ResponseUtils.error("Operazione sconosciuta: " + op, ResponseCodes.BAD_REQUEST);
             }
-
         } catch (JsonSyntaxException e) {
-            return ResponseUtils.error("JSON malformato", 400);
+            return ResponseUtils.error("JSON malformato", ResponseCodes.BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseUtils.error("Errore interno server: " + e.getMessage(), 500);
+            return ResponseUtils.error("Errore interno server: " + e.getMessage(), ResponseCodes.INTERNAL_SERVER_ERROR);
         }
     }
 }

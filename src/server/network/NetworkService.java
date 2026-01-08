@@ -14,9 +14,10 @@ import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class NetworkService {
     private Selector selector;
@@ -25,50 +26,39 @@ public class NetworkService {
     private final UdpSender udpSender;
     private volatile boolean running = true;
 
+    // FIX CONCORRENZA: Manteniamo le sessioni in un Set Thread-Safe separato dal Selector
+    private final Set<ClientSession> activeSessions = ConcurrentHashMap.newKeySet();
+
     public NetworkService() {
         this.workerPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.udpSender = new UdpSender();
     }
 
-    // --- FASE 1: Inizializzazione (Non bloccante) ---
     public void init() throws IOException {
         selector = Selector.open();
         serverSocket = ServerSocketChannel.open();
-        
         serverSocket.bind(new InetSocketAddress(ServerConfig.PORT));
         serverSocket.configureBlocking(false);
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
-
         ServerLogger.info("Server inizializzato su porta TCP " + ServerConfig.PORT);
     }
 
-    // --- FASE 2: Loop Principale (Bloccante) ---
     public void start() {
         ServerLogger.info("Network Loop avviato. In attesa di connessioni...");
-        
         try {
             while (running && !Thread.currentThread().isInterrupted()) {
-                if (selector == null) {
-                    ServerLogger.error("Selector non inizializzato! Hai chiamato init()?");
-                    return;
-                }
-                
-                selector.select(); // Si blocca qui
-                
+                if (selector == null) return;
+                selector.select(); 
                 if (!running) break;
 
                 Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
                 while (keys.hasNext()) {
                     SelectionKey key = keys.next();
                     keys.remove();
-
                     if (!key.isValid()) continue;
 
-                    if (key.isAcceptable()) {
-                        acceptConnection();
-                    } else if (key.isReadable()) {
-                        TcpReader.readFromClient(key, this);
-                    }
+                    if (key.isAcceptable()) acceptConnection();
+                    else if (key.isReadable()) TcpReader.readFromClient(key, this);
                 }
             }
         } catch (IOException e) {
@@ -78,7 +68,7 @@ public class NetworkService {
 
     public void stop() {
         this.running = false;
-        if (selector != null) selector.wakeup(); // Sveglia il selector.select()
+        if (selector != null) selector.wakeup();
         if (workerPool != null) workerPool.shutdown();
         ServerLogger.info("NetworkService fermato.");
     }
@@ -92,18 +82,24 @@ public class NetworkService {
         
         key.attach(session);
         session.setSelectionKey(key); 
+        
+        // AGGIUNTA SICURA
+        activeSessions.add(session);
 
         ServerLogger.info("Nuova connessione: " + client.getRemoteAddress());
     }
 
     public void submitTask(Runnable task) {
-        if (!workerPool.isShutdown()) {
-            workerPool.execute(task);
-        }
+        if (!workerPool.isShutdown()) workerPool.execute(task);
     }
 
     public void disconnectClient(SelectionKey key) {
         try {
+            // RIMOZIONE SICURA
+            if (key.attachment() instanceof ClientSession) {
+                activeSessions.remove((ClientSession) key.attachment());
+            }
+            
             key.channel().close();
             key.cancel();
             ServerLogger.info("Client disconnesso.");
@@ -112,14 +108,9 @@ public class NetworkService {
         }
     }
 
+    // ORA QUESTO METODO È THREAD-SAFE per il GameScheduler
     public Collection<ClientSession> getAllSessions() {
-        if (selector == null) {
-            return Collections.emptyList();
-        }
-        return selector.keys().stream()
-                .filter(k -> k.attachment() instanceof ClientSession)
-                .map(k -> (ClientSession) k.attachment())
-                .collect(Collectors.toList());
+        return Collections.unmodifiableCollection(activeSessions);
     }
 
     // --- INVIO RISPOSTE ---

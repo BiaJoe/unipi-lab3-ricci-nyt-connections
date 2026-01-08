@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import utils.ServerResponse;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -66,42 +65,25 @@ public class TcpListener implements Runnable {
             String code = obj.get("objectCode").getAsString();
 
             switch (code) {
-                case "RES_ERROR":
-                    ui.showError(gson.fromJson(obj, ServerResponse.Error.class).message);
-                    break;
-                case "RES_GENERIC":
-                    ui.showMessage(gson.fromJson(obj, ServerResponse.Generic.class).message);
-                    break;
-                case "RES_EVENT":
-                    ui.showNotification(gson.fromJson(obj, ServerResponse.Event.class).message);
-                    break;
+                case "RES_ERROR": ui.showError(gson.fromJson(obj, ServerResponse.Error.class).message); break;
+                case "RES_GENERIC": ui.showMessage(gson.fromJson(obj, ServerResponse.Generic.class).message); break;
+                case "RES_EVENT": ui.showNotification(gson.fromJson(obj, ServerResponse.Event.class).message); break;
                 case "RES_AUTH":
                     ServerResponse.Auth auth = gson.fromJson(obj, ServerResponse.Auth.class);
                     ui.showMessage(auth.message);
                     if (auth.gameInfo != null) ui.showGameInfo(auth.gameInfo);
                     break;
-                case "RES_GAME_INFO":
-                    ServerResponse.GameInfoData info = gson.fromJson(obj, ServerResponse.GameInfoData.class);
-                    if (info.message != null && !info.message.equals("OK")) ui.showMessage(info.message);
-                    ui.showGameInfo(info);
-                    break;
-                case "RES_PROPOSAL":
-                    ui.showSubmitResult(gson.fromJson(obj, ServerResponse.Proposal.class));
-                    break;
-                case "RES_GAME_STATS":
-                    ui.showGameStats(gson.fromJson(obj, ServerResponse.GameStats.class));
-                    break;
-                case "RES_PLAYER_STATS":
-                    ui.showPlayerStats(gson.fromJson(obj, ServerResponse.PlayerStats.class));
-                    break;
-                case "RES_LEADERBOARD":
-                    ui.showLeaderboard(gson.fromJson(obj, ServerResponse.Leaderboard.class));
-                    break;
-                default:
-                    System.err.println("Codice sconosciuto: " + code);
+                case "RES_GAME_INFO": ui.showGameInfo(gson.fromJson(obj, ServerResponse.GameInfoData.class)); break;
+                case "RES_PROPOSAL": ui.showSubmitResult(gson.fromJson(obj, ServerResponse.Proposal.class)); break;
+                case "RES_GAME_STATS": ui.showGameStats(gson.fromJson(obj, ServerResponse.GameStats.class)); break;
+                case "RES_PLAYER_STATS": ui.showPlayerStats(gson.fromJson(obj, ServerResponse.PlayerStats.class)); break;
+                case "RES_LEADERBOARD": ui.showLeaderboard(gson.fromJson(obj, ServerResponse.Leaderboard.class)); break;
+                
+                // NUOVO
+                case "RES_ADMIN": ui.showAdminInfo(gson.fromJson(obj, ServerResponse.AdminInfo.class)); break;
+                
+                default: System.err.println("Codice sconosciuto: " + code);
             }
-        } catch (Exception e) {
-            System.err.println("JSON Error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("JSON Error: " + e.getMessage()); }
     }
 }

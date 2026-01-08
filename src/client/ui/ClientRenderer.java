@@ -27,4 +27,7 @@ public interface ClientRenderer {
     
     // Notifiche asincrone
     void showNotification(String message);
+
+    // NUOVO: Mostra info amministrazione
+    void showAdminInfo(ServerResponse.AdminInfo info);
 }

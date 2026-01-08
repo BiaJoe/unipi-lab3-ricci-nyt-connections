@@ -3,9 +3,9 @@ package utils;
 import java.util.List;
 
 public class ServerResponse {
-    public String objectCode; // IL DISCRIMINATORE (es. RES_PLAYER_STATS)
-    public String status;     // "OK", "ERROR"
-    public String message;    // Messaggio opzionale
+    public String objectCode; 
+    public String status;     
+    public String message;    
     public Integer errorCode;
 
     public ServerResponse(String objectCode, String status, String message) {
@@ -13,132 +13,67 @@ public class ServerResponse {
         this.status = status;
         this.message = message;
     }
-    
     public ServerResponse() {}
 
-    // --- 1. ERRORI & GENERICI ---
-    public static class Error extends ServerResponse {
-        public Error(String msg, int code) { 
-            super("RES_ERROR", "ERROR", msg); 
-            this.errorCode = code; 
-        }
-    }
+    // --- CLASSI BASE (Invariate) ---
+    public static class Error extends ServerResponse { public Error(String m, int c) { super("RES_ERROR", "ERROR", m); errorCode=c; }}
+    public static class Generic extends ServerResponse { public Generic(String m) { super("RES_GENERIC", "OK", m); }}
+    public static class Event extends ServerResponse { public Boolean isFinished; public Event(String m) { super("RES_EVENT", "EVENT", m); }}
 
-    public static class Generic extends ServerResponse {
-        public Generic(String msg) { super("RES_GENERIC", "OK", msg); }
-    }
-
-    // --- 2. EVENTI (UDP) ---
-    public static class Event extends ServerResponse {
-        public Boolean isFinished;
-        public Event(String msg) { super("RES_EVENT", "EVENT", msg); }
-    }
-
-    // --- 3. AUTH (Login) ---
+    // --- DATI GIOCO (Invariate) ---
     public static class Auth extends ServerResponse {
-        public GameInfoData gameInfo; // Riutilizziamo la struttura dati completa
-        public Auth(String msg, GameInfoData info) { 
-            super("RES_AUTH", "OK", msg); 
-            this.gameInfo = info; 
-        }
+        public GameInfoData gameInfo;
+        public Auth(String m, GameInfoData i) { super("RES_AUTH", "OK", m); gameInfo=i; }
     }
-
-    // --- 4. PROPOSTA (Submit) ---
     public static class Proposal extends ServerResponse {
-        public Boolean isCorrect;
-        public String groupTitle;
-        public Integer currentScore;
-        public List<GroupData> solution; // Se la partita finisce con questo submit
-        public Boolean isFinished;
-
-        public Proposal(boolean correct, String title, int score) {
-            super("RES_PROPOSAL", "OK", correct ? "Gruppo Trovato!" : "Sbagliato.");
-            this.isCorrect = correct;
-            this.groupTitle = title;
-            this.currentScore = score;
-        }
+        public Boolean isCorrect; public String groupTitle; public Integer currentScore;
+        public List<GroupData> solution; public Boolean isFinished;
+        public Proposal(boolean c, String t, int s) { super("RES_PROPOSAL", "OK", c?"Corretto":"Sbagliato"); isCorrect=c; groupTitle=t; currentScore=s; }
     }
-
-    // --- 5. INFO PARTITA (Stato corrente o storico) ---
     public static class GameInfoData extends ServerResponse {
-        public Integer gameId;
-        public Integer timeLeft;
-        public Integer mistakes;
-        public Integer currentScore;
-        public Boolean isFinished;
-        public List<String> words; // Parole mescolate o parziali
-        public List<GroupData> correctGroups; // Gruppi già indovinati
-        public List<GroupData> solution; // Soluzione completa (solo se finita)
-        public List<PlayerResult> playerResults; // Storico partecipanti (solo se finita)
-
-        public GameInfoData(String msg) {
-            super("RES_GAME_INFO", "OK", msg);
-        }
+        public Integer gameId, timeLeft, mistakes, currentScore; public Boolean isFinished;
+        public List<String> words; public List<GroupData> correctGroups;
+        public List<GroupData> solution; public List<PlayerResult> playerResults;
+        public GameInfoData(String m) { super("RES_GAME_INFO", "OK", m); }
     }
-
-    // --- 6. STATISTICHE PARTITA (Globali) ---
     public static class GameStats extends ServerResponse {
-        public Integer gameId;
-        // Se in corso:
-        public Integer timeLeft;
-        public Integer playersActive;
-        // Se finita (o parziali):
-        public Integer playersFinished;
-        public Integer playersWon;
-        public Float averageScore; // Solo se finita
-
+        public Integer gameId, timeLeft, playersActive, playersFinished, playersWon; public Float averageScore;
         public GameStats() { super("RES_GAME_STATS", "OK", null); }
     }
-
-    // --- 7. STATISTICHE GIOCATORE (Personali) ---
     public static class PlayerStats extends ServerResponse {
-        public Integer puzzlesCompleted; 
-        public Float winRate;            
-        public Float lossRate;           
-        public Integer currentStreak;    
-        public Integer maxStreak;        
-        public Integer perfectPuzzles;   
-        public int[] mistakeHistogram;   // (Array di 5 int: 0 err, 1 err... 4 err)
-
+        public Integer puzzlesCompleted, currentStreak, maxStreak, perfectPuzzles;
+        public Float winRate, lossRate; public int[] mistakeHistogram;
         public PlayerStats() { super("RES_PLAYER_STATS", "OK", null); }
     }
-
-    // --- 8. CLASSIFICA (Leaderboard) ---
     public static class Leaderboard extends ServerResponse {
-        // FIX: Usiamo RankingEntry locale, non UserManager.UserRank
-        // Questo evita errori di importazione e dipendenze circolari
         public List<RankingEntry> ranking;
+        public Leaderboard(List<RankingEntry> r) { super("RES_LEADERBOARD", "OK", null); ranking=r; }
+    }
 
-        public Leaderboard(List<RankingEntry> ranking) {
-            super("RES_LEADERBOARD", "OK", null);
-            this.ranking = ranking;
+    // --- ADMIN INFO (MODIFICATO) ---
+    public static class AdminInfo extends ServerResponse {
+        public String adminPayload; // Messaggi di testo generici
+        public List<UserAccountInfo> userList; // Per GOD MODE
+        public List<GroupData> oracleData; // Per ORACLE (Nuovo campo strutturato)
+
+        // Costruttore vuoto per inizializzazione manuale
+        public AdminInfo() {
+            super("RES_ADMIN", "OK", "Admin Command");
+        }
+
+        // Costruttore rapido per GOD
+        public AdminInfo(List<UserAccountInfo> users) {
+            super("RES_ADMIN", "OK", "God Mode Data");
+            this.userList = users;
         }
     }
 
-    // --- DTO DI SUPPORTO ---
-    
-    public static class GroupData {
-        public String theme;
-        public List<String> words;
-        public GroupData(String t, List<String> w) { this.theme = t; this.words = w; }
+    // --- DTO ---
+    public static class UserAccountInfo {
+        public String username; public String password; public int totalScore; public int played; public int won;
+        public UserAccountInfo(String u, String p, int s, int pl, int w) { username=u; password=p; totalScore=s; played=pl; won=w; }
     }
-
-    public static class RankingEntry {
-        public int position;
-        public String username;
-        public int score;
-        public RankingEntry(int p, String u, int s) { this.position = p; this.username = u; this.score = s; }
-    }
-
-    public static class PlayerResult {
-        public String username;
-        public int score; // <--- FIX: Corretto da 'errors' a 'score'
-        public boolean won;
-        
-        public PlayerResult(String u, int s, boolean w) { 
-            this.username = u; 
-            this.score = s; 
-            this.won = w; 
-        }
-    }
+    public static class GroupData { public String theme; public List<String> words; public GroupData(String t, List<String> w) { theme=t; words=w; }}
+    public static class RankingEntry { public int position; public String username; public int score; public RankingEntry(int p, String u, int s) { position=p; username=u; score=s; }}
+    public static class PlayerResult { public String username; public int score; public boolean won; public PlayerResult(String u, int s, boolean w) { username=u; score=s; won=w; }}
 }
