@@ -8,39 +8,43 @@ import client.ui.ConsoleUI;
 
 import java.io.IOException;
 
+
+/**
+ * Main del Client
+ * - carica la config
+ * - inizializza network e UI 
+ * - inizializza il sistema di processing dei comandi
+ * - avvia i thread di ascolto
+ * - avvia il loop di input da linea di comando
+ */
 public class ClientMain {
     public static final String CONFIG_FILE = "client.properties";
 
     public static void main(String[] args) {
-        // 1. Caricamento Configurazione
+        // Carico la Config
         ClientConfig config = new ClientConfig();
         try { config.load(CONFIG_FILE); } catch (IOException e) { 
             System.err.println("Errore config: " + e.getMessage());
             return; 
         }
 
-        // 2. Setup UI
-        ConsoleUI ui = new ConsoleUI(config.helpFile, config.trophyFile);
-        
-        // 3. Setup Network
-        NetworkManager net = new NetworkManager(config);
+        ConsoleUI ui = new ConsoleUI(config); // Costruisco la UI, in questo caso la TUI
+        NetworkManager net = new NetworkManager(config); // Costruisco il Network Manager
 
         try {
-            // 4. Connessione
-            net.connect();
-            ui.init(); // Stampa banner
-            ui.showMessage("Connesso al server " + config.serverAddress + ":" + config.serverPort);
+            net.connect(); // Connessione
+            // ui.showMessage("Connesso al server " + config.serverAddress + ":" + config.serverPort);
 
-            // 5. Setup Logic (CommandProcessor)
+            // Setup Logica dei comandi
             CommandProcessor commands = new CommandProcessor(net, ui);
 
-            // 6. Avvio Thread di Ascolto
+            // Avvio Thread di Ascolto su connessione TCP
             new Thread(new TcpListener(net, ui, config.tcpBufferSize)).start();
             
-            // UdpListener vuole (net, ui, bufferSize)
+            // Avvio Thread di ricezione notifiche UDP
             new Thread(new UdpListener(net, ui, config.udpBufferSize)).start();
 
-            // 7. Loop di Input
+            // Loop di Input
             ui.runInputLoop(commands);
 
         } catch (IOException e) {

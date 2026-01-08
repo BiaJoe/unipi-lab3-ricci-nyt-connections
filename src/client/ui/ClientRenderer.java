@@ -5,7 +5,6 @@ import utils.ServerResponse;
 import java.util.Collection;
 
 public interface ClientRenderer {
-    void init();
     void showHelp(Collection<Command> commands);
     void showMessage(String msg);
     void showError(String err);
@@ -28,6 +27,6 @@ public interface ClientRenderer {
     // Notifiche asincrone
     void showNotification(String message);
 
-    // NUOVO: Mostra info amministrazione
+    // Mostra info amministrazione (Utenti, Oracle, Payload generici)
     void showAdminInfo(ServerResponse.AdminInfo info);
 }

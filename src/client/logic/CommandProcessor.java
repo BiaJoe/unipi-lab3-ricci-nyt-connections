@@ -88,21 +88,37 @@ public class CommandProcessor {
         net.sendRequest(new ClientRequest.UpdateCredentials(args[0], args[1], args[2], args[3]));
         return true;
     }
-    private boolean doInfo(String[] args) throws IOException { net.sendRequest(new ClientRequest.GameInfo(0)); return true; }
+    
+    // MODIFICATO: Usa il costruttore vuoto per chiedere info sulla partita corrente (null)
+    private boolean doInfo(String[] args) throws IOException { 
+        net.sendRequest(new ClientRequest.GameInfo()); 
+        return true; 
+    }
+
     private boolean doGameInfo(String[] args) throws IOException {
         if (args.length != 1) throw new IllegalArgumentException("Usa: /gameinfo <id>");
         try { net.sendRequest(new ClientRequest.GameInfo(Integer.parseInt(args[0]))); } 
         catch (NumberFormatException e) { throw new IllegalArgumentException("ID non valido"); }
         return true;
     }
+    
+    // MODIFICATO: Gestisce sia nessun argomento (corrente) sia ID specifico
     private boolean doGameStats(String[] args) throws IOException {
-        int id = 0;
-        if (args.length > 0) {
-            try { id = Integer.parseInt(args[0]); } catch (NumberFormatException e) { throw new IllegalArgumentException("ID non valido"); }
+        if (args.length == 0) {
+            // Nessun ID -> Partita Corrente
+            net.sendRequest(new ClientRequest.RequestGameStats());
+        } else {
+            // ID specificato (es. 0) -> Partita Specifica
+            try { 
+                int id = Integer.parseInt(args[0]);
+                net.sendRequest(new ClientRequest.RequestGameStats(id));
+            } catch (NumberFormatException e) { 
+                throw new IllegalArgumentException("ID non valido"); 
+            }
         }
-        net.sendRequest(new ClientRequest.RequestGameStats(id));
         return true;
     }
+
     private boolean doMe(String[] args) throws IOException { net.sendRequest(new ClientRequest.PlayerStats()); return true; }
     private boolean doRank(String[] args) throws IOException {
         if (args.length == 0) net.sendRequest(new ClientRequest.Leaderboard());

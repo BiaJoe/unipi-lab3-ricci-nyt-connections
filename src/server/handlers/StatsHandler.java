@@ -15,8 +15,9 @@ public class StatsHandler {
     public static String handleRequestGameStats(ClientRequest.RequestGameStats req, ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", ResponseCodes.UNAUTHORIZED);
         
-        // 0 o null significa "partita corrente"
-        GameMatch match = (req.gameId == null || req.gameId == 0) 
+        // FIX: Rimosso "|| req.gameId == 0".
+        // Se req.gameId è null, prendiamo la corrente. Se è 0, prendiamo la 0.
+        GameMatch match = (req.gameId == null) 
             ? GameManager.getInstance().getCurrentMatch()
             : GameManager.getInstance().getGameMatchById(req.gameId);
 
@@ -30,9 +31,7 @@ public class StatsHandler {
         resp.playersActive = snap.active;
         resp.playersFinished = snap.finished;
         resp.playersWon = snap.won;
-        
-        // Calcolo media (opzionale, se richiesto dai requisiti avanzati)
-        // Per ora lasciamo null o calcoliamo se abbiamo i dati storici completi nel match
+        resp.averageScore = snap.averageScore;
         
         return ResponseUtils.toJson(resp);
     }
@@ -62,11 +61,9 @@ public class StatsHandler {
         return ResponseUtils.toJson(resp);
     }
 
-    // Gestione Classifica (/rk)
     public static String handleRequestLeaderboard(ClientRequest.Leaderboard req, ClientSession session) {
         if (!session.isLoggedIn()) return ResponseUtils.error("Non loggato", ResponseCodes.UNAUTHORIZED);
         
-        // Passiamo i parametri di filtro al manager
         var ranking = UserManager.getInstance().getLeaderboard(req.topPlayers, req.playerName);
         
         if (ranking.isEmpty() && req.playerName != null) {

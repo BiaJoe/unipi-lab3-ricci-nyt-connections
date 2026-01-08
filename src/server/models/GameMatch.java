@@ -3,7 +3,7 @@ package server.models;
 import server.ServerConfig;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections; // Importante
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,22 +23,15 @@ public class GameMatch {
         this.players = new ConcurrentHashMap<>();
     }
 
-    // --- LOGICA DI GIOCO ---
-
     public PlayerGameState getOrCreatePlayerState(String username) {
         return players.computeIfAbsent(username, k -> {
             PlayerGameState ps = new PlayerGameState();
-            
-            // --- FIX SHUFFLE ---
-            // Recuperiamo tutte le parole, le mescoliamo UNA volta e le salviamo nello stato
             List<String> allWords = new ArrayList<>();
             for (Game.Group g : gameData.getGroups()) {
                 allWords.addAll(g.getWords());
             }
             Collections.shuffle(allWords);
             ps.setShuffledWords(allWords);
-            // -------------------
-            
             return ps;
         });
     }
@@ -53,17 +46,27 @@ public class GameMatch {
         return Math.max(0, remaining);
     }
 
+    // --- SNAPSHOT CON MEDIA E VITTORIA CORRETTA ---
     public StatsSnapshot getStatsSnapshot() {
         int active = 0, finished = 0, won = 0;
+        float totalScore = 0;
+
         for (PlayerGameState p : players.values()) {
             if (p.isFinished()) {
                 finished++;
-                if (p.getErrors() < ServerConfig.MAX_ERRORS) won++;
+                totalScore += p.getScore();
+                
+                // Usa il flag impostato da GameHandler
+                if (p.hasWon()) { 
+                    won++;
+                }
             } else {
                 active++;
             }
         }
-        return new StatsSnapshot(active, finished, won);
+        
+        float avg = (finished > 0) ? (totalScore / finished) : 0.0f;
+        return new StatsSnapshot(active, finished, won, avg);
     }
 
     public Game getGameData() { return gameData; }
@@ -74,6 +77,10 @@ public class GameMatch {
 
     public static class StatsSnapshot {
         public int active, finished, won;
-        public StatsSnapshot(int a, int f, int w) { active=a; finished=f; won=w; }
+        public float averageScore;
+        
+        public StatsSnapshot(int a, int f, int w, float avg) { 
+            active=a; finished=f; won=w; averageScore=avg;
+        }
     }
 }

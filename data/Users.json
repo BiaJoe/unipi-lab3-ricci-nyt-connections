@@ -1,28 +1,11 @@
 {
-  "d98a4a6e-ffad-46e3-82db-d5f7217ee994": {
-    "id": "d98a4a6e-ffad-46e3-82db-d5f7217ee994",
-    "username": "B",
-    "password": "M",
-    "puzzlesPlayed": 18,
-    "puzzlesWon": 4,
-    "currentStreak": 0,
-    "maxStreak": 1,
-    "totalScore": 32,
-    "winDistribution": [
-      1,
-      0,
-      1,
-      0,
-      14
-    ]
-  },
-  "7c7d9048-390b-455b-b0a1-ed6347faf69c": {
-    "id": "7c7d9048-390b-455b-b0a1-ed6347faf69c",
-    "username": "1",
-    "password": "2",
-    "puzzlesPlayed": 5,
+  "280c593b-fc84-4b8f-a3b8-9fac4904f11d": {
+    "id": "280c593b-fc84-4b8f-a3b8-9fac4904f11d",
+    "username": "Super",
+    "password": "000",
+    "puzzlesPlayed": 1,
     "puzzlesWon": 1,
-    "currentStreak": 0,
+    "currentStreak": 1,
     "maxStreak": 1,
     "totalScore": 10,
     "winDistribution": [
@@ -30,7 +13,75 @@
       0,
       1,
       0,
-      4
+      0
+    ]
+  },
+  "26818b1f-7027-4652-b513-de1f22fb44a1": {
+    "id": "26818b1f-7027-4652-b513-de1f22fb44a1",
+    "username": "biagio",
+    "password": "676722",
+    "puzzlesPlayed": 3,
+    "puzzlesWon": 1,
+    "currentStreak": 0,
+    "maxStreak": 1,
+    "totalScore": 2,
+    "winDistribution": [
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "3ff317c2-ae5a-41ee-bafe-8a49594202bf": {
+    "id": "3ff317c2-ae5a-41ee-bafe-8a49594202bf",
+    "username": "1",
+    "password": "0",
+    "puzzlesPlayed": 2,
+    "puzzlesWon": 1,
+    "currentStreak": 0,
+    "maxStreak": 1,
+    "totalScore": 2,
+    "winDistribution": [
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  "59a683e4-8e2b-4423-9231-54265128109b": {
+    "id": "59a683e4-8e2b-4423-9231-54265128109b",
+    "username": "2",
+    "password": "0",
+    "puzzlesPlayed": 2,
+    "puzzlesWon": 1,
+    "currentStreak": 1,
+    "maxStreak": 1,
+    "totalScore": 6,
+    "winDistribution": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  "4450b073-6bc1-415e-9241-4dacc2bda00b": {
+    "id": "4450b073-6bc1-415e-9241-4dacc2bda00b",
+    "username": "b",
+    "password": "m",
+    "puzzlesPlayed": 6,
+    "puzzlesWon": 2,
+    "currentStreak": 0,
+    "maxStreak": 1,
+    "totalScore": 20,
+    "winDistribution": [
+      1,
+      0,
+      0,
+      0,
+      1
     ]
   }
 }

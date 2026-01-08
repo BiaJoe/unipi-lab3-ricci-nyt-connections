@@ -85,14 +85,23 @@ public class UserManager {
         String id = usernameIndex.get(username);
         if (id != null) {
             usersById.computeIfPresent(id, (k, user) -> {
-                if (won) user.addWin(errors, points); else user.addLoss(points);
+                if (won) {
+                    // Aggiorna istogramma (0,1,2,3,4 errori)
+                    user.addWin(errors, points); 
+                } else {
+                    // Non aggiorna istogramma
+                    user.addLoss(points);
+                }
                 return user;
             });
             saveData(); 
         }
     }
     
-    public void updateStatsTimeOut(String username) { updateGameResult(username, 0, 0, false); }
+    public void updateStatsTimeOut(String username) { 
+        updateGameResult(username, 0, 0, false); 
+    }
+    
     public User getUser(String username) { String id = usernameIndex.get(username); return (id != null) ? usersById.get(id) : null; }
 
     public List<RankingEntry> getLeaderboard(Integer topK, String specificUser) {

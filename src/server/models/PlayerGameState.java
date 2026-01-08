@@ -27,8 +27,6 @@ public class PlayerGameState {
     }
 
     public int getScore() {
-        // Calcolo punteggio: (Gruppi * 6) - (Errori * 4)
-        // Se ho vinto con 3 gruppi, il sistema ne conta 3.
         return (guessedThemes.size() * 6) - (errors * 4);
     }
 
@@ -39,13 +37,17 @@ public class PlayerGameState {
     // --- GETTERS & SETTERS ---
     public Set<String> getGuessedThemes() { return guessedThemes; }
     public int getErrors() { return errors; }
+    
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
     
     public List<String> getShuffledWords() { return shuffledWords; }
     public void setShuffledWords(List<String> words) { this.shuffledWords = words; }
 
-    // NUOVI GETTER/SETTER PER WON
+    // --- GESTIONE VITTORIA ---
+    // Usato da GameMatch per le statistiche
     public boolean hasWon() { return won; }
-    public void setWon(boolean won) { this.won = won; }
+    
+    // Usato da GameHandler per decretare la vittoria
+    public void setWon(boolean won) { this.won = won; } 
 }

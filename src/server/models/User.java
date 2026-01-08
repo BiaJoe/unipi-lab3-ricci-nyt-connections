@@ -16,7 +16,10 @@ public class User {
     private int currentStreak;
     private int maxStreak;
     private int totalScore; 
-    private int[] winDistribution = new int[5];
+    
+    // Istogramma VITTORIE per numero di errori:
+    // [0]=0 err, [1]=1 err, [2]=2 err, [3]=3 err, [4]=4 err
+    private int[] winDistribution = new int[5]; 
 
     public User(String username, String password) {
         this.id = UUID.randomUUID().toString(); // Genera ID univoco automatico
@@ -52,16 +55,24 @@ public class User {
         this.puzzlesWon++;
         this.totalScore += pointsEarned;
         
+        // Gestione Streak
         this.currentStreak++;
         if (this.currentStreak > this.maxStreak) this.maxStreak = this.currentStreak;
 
-        if (errorsMade >= 0 && errorsMade < 4) this.winDistribution[errorsMade]++;
+        // Aggiorna istogramma SOLO per le vittorie
+        // errorsMade corrisponde all'indice (0, 1, 2, 3, 4)
+        if (errorsMade >= 0 && errorsMade < winDistribution.length) {
+            this.winDistribution[errorsMade]++;
+        }
     }
 
     public synchronized void addLoss(int pointsEarned) {
         this.puzzlesPlayed++;
+        // puzzlesWon NON incrementa
         this.totalScore += pointsEarned;
+        
+        // Reset Streak
         this.currentStreak = 0;
-        if (this.winDistribution.length > 4) this.winDistribution[4]++;
+
     }
 }

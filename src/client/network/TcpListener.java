@@ -78,8 +78,6 @@ public class TcpListener implements Runnable {
                 case "RES_GAME_STATS": ui.showGameStats(gson.fromJson(obj, ServerResponse.GameStats.class)); break;
                 case "RES_PLAYER_STATS": ui.showPlayerStats(gson.fromJson(obj, ServerResponse.PlayerStats.class)); break;
                 case "RES_LEADERBOARD": ui.showLeaderboard(gson.fromJson(obj, ServerResponse.Leaderboard.class)); break;
-                
-                // NUOVO
                 case "RES_ADMIN": ui.showAdminInfo(gson.fromJson(obj, ServerResponse.AdminInfo.class)); break;
                 
                 default: System.err.println("Codice sconosciuto: " + code);

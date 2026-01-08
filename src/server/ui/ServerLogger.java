@@ -15,18 +15,16 @@ public class ServerLogger {
 
     // --- COLORI ANSI ---
     private static final String RESET  = "\u001B[0m";
-    private static final String GREEN  = "\u001B[32m"; // INFO
-    private static final String RED    = "\u001B[31m"; // ERROR
-    private static final String BLUE   = "\u001B[34m"; // GAME / NUMERI
+    private static final String GREEN  = "\u001B[32m"; 
+    private static final String RED    = "\u001B[31m"; 
+    private static final String BLUE   = "\u001B[34m"; 
     
     // Colori JSON / Traffico
-    private static final String CYAN   = "\u001B[36m"; // Header OUT
-    private static final String PURPLE = "\u001B[35m"; // Header IN
-    private static final String YELLOW = "\u001B[33m"; // Header UDP / Chiavi
-    private static final String WHITE  = "\u001B[37m"; // Valori JSON
+    private static final String CYAN   = "\u001B[36m"; 
+    private static final String PURPLE = "\u001B[35m"; 
+    private static final String YELLOW = "\u001B[33m"; 
+    private static final String WHITE  = "\u001B[37m"; 
 
-    // --- HELPER FUNCTION PER IL TAG COLORATO ---
-    // Colora tutto il blocco [ORARIO LABEL]
     private static String getColoredTag(String color, String label) {
         return String.format("%s[%s %s]%s", color, timestamp(), label, RESET);
     }
@@ -34,17 +32,14 @@ public class ServerLogger {
     // --- LOGGING STANDARD ---
 
     public static void info(String msg) {
-        // Esempio: [19:30:00 INFO] Messaggio (Tutto il tag è Verde)
         System.out.println(getColoredTag(GREEN, "INFO") + " " + msg);
     }
 
     public static void error(String msg) {
-        // Esempio: [19:30:00 ERROR] Messaggio (Tutto il tag è Rosso)
         System.out.println(getColoredTag(RED, "ERROR") + " " + msg);
     }
 
     public static void game(String msg) {
-        // Esempio: [19:30:00 GAME] Messaggio (Tutto il tag è Blu)
         System.out.println(getColoredTag(BLUE, "GAME") + " " + msg);
     }
 

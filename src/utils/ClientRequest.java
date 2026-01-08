@@ -29,13 +29,27 @@ public abstract class ClientRequest {
         public List<String> words;
         public SubmitProposal(List<String> w) { this.operation = "submitProposal"; this.words = w; }
     }
+    
+    // MODIFICATO: Supporta richiesta senza ID (corrente) e con ID (specifica)
     public static class GameInfo extends ClientRequest {
         public Integer gameId;
+        
+        // Costruttore per ID specifico (es: /gi 0)
         public GameInfo(int id) { this.operation = "requestGameInfo"; this.gameId = id; }
+        
+        // Costruttore per PARTITA CORRENTE (es: /i) -> gameId è null
+        public GameInfo() { this.operation = "requestGameInfo"; this.gameId = null; }
     }
+    
+    // MODIFICATO: Supporta richiesta senza ID (corrente) e con ID (specifica)
     public static class RequestGameStats extends ClientRequest {
         public Integer gameId;
+        
+        // Costruttore per ID specifico (es: /gs 0)
         public RequestGameStats(int id) { this.operation = "requestGameStats"; this.gameId = id; }
+        
+        // Costruttore per PARTITA CORRENTE (es: /gs) -> gameId è null
+        public RequestGameStats() { this.operation = "requestGameStats"; this.gameId = null; }
     }
 
     // --- 3. INFORMAZIONI GENERALI ---

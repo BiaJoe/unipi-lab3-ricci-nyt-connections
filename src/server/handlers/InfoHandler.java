@@ -17,36 +17,31 @@ public class InfoHandler {
 
         int targetId;
 
-        // 1. Logica di risoluzione ID
-        if (req.gameId == null || req.gameId == 0) {
-            // L'utente chiede la corrente
+        // FIX: Rimosso "|| req.gameId == 0". L'ID 0 è valido!
+        // Solo null indica "Dammi la corrente".
+        if (req.gameId == null) {
             if (current == null) {
                 return ResponseUtils.error("Nessuna partita attiva.", 404);
             }
             targetId = current.getGameId();
         } else {
-            // L'utente chiede una specifica
+            // L'utente chiede una specifica (anche la 0)
             targetId = req.gameId;
         }
 
-        // 2. Cerca la partita (corrente o storico)
         GameMatch match = manager.getGameMatchById(targetId);
 
         if (match == null) {
             return ResponseUtils.error("Partita " + targetId + " non trovata.", 404);
         }
 
-        // 3. Recupera o Inizializza lo stato del player
         PlayerGameState pState = match.getPlayerState(session.getUsername());
 
-        // Se è la partita CORRENTE e lo stato non esiste, crealo ora (il player entra
-        // in gioco)
+        // Se è la partita CORRENTE e lo stato non esiste, crealo ora
         if (pState == null && match == current) {
             pState = match.getOrCreatePlayerState(session.getUsername());
         }
 
-        // 4. Costruisci la risposta usando la Utility
-        var responseObj = ResponseUtils.buildGameInfo(match, pState);
-        return ResponseUtils.toJson(responseObj);
+        return ResponseUtils.toJson(ResponseUtils.buildGameInfo(match, pState));
     }
 }

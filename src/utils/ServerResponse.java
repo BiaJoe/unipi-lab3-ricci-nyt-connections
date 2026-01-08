@@ -17,7 +17,7 @@ public class ServerResponse {
     public ServerResponse() {
     }
 
-    // ... Error, Generic, Event, Auth, Proposal RIMANGONO UGUALI ...
+    // --- ERROR & GENERIC ---
     public static class Error extends ServerResponse {
         public Error(String m, int c) {
             super("RES_ERROR", "ERROR", m);
@@ -31,6 +31,7 @@ public class ServerResponse {
         }
     }
 
+    // --- EVENT ---
     public static class Event extends ServerResponse {
         public Boolean isFinished;
 
@@ -39,6 +40,7 @@ public class ServerResponse {
         }
     }
 
+    // --- AUTH ---
     public static class Auth extends ServerResponse {
         public GameInfoData gameInfo;
 
@@ -48,6 +50,7 @@ public class ServerResponse {
         }
     }
 
+    // --- PROPOSAL ---
     public static class Proposal extends ServerResponse {
         public Boolean isCorrect;
         public String groupTitle;
@@ -63,11 +66,11 @@ public class ServerResponse {
         }
     }
 
-    // --- 5. INFO PARTITA (MODIFICATO) ---
+    // --- INFO PARTITA ---
     public static class GameInfoData extends ServerResponse {
         public Integer gameId, timeLeft, mistakes, currentScore;
         public Boolean isFinished;
-        public Boolean isWinner; // <--- NUOVO CAMPO: Il server mi dice esplicitamente se ho vinto
+        public Boolean isWinner; 
 
         public List<String> words;
         public List<GroupData> correctGroups;
@@ -79,7 +82,7 @@ public class ServerResponse {
         }
     }
 
-    // ... GameStats, PlayerStats, Leaderboard, AdminInfo, DTOs RIMANGONO UGUALI ...
+    // --- STATS ---
     public static class GameStats extends ServerResponse {
         public Integer gameId, timeLeft, playersActive, playersFinished, playersWon;
         public Float averageScore;
@@ -92,13 +95,17 @@ public class ServerResponse {
     public static class PlayerStats extends ServerResponse {
         public Integer puzzlesCompleted, currentStreak, maxStreak, perfectPuzzles;
         public Float winRate, lossRate;
-        public int[] mistakeHistogram;
+        
+        // Istogramma delle sole VITTORIE per numero di errori [0..4]
+        // Le sconfitte non sono incluse in questo array.
+        public int[] mistakeHistogram; 
 
         public PlayerStats() {
             super("RES_PLAYER_STATS", "OK", null);
         }
     }
 
+    // --- LEADERBOARD ---
     public static class Leaderboard extends ServerResponse {
         public List<RankingEntry> ranking;
 
@@ -108,6 +115,7 @@ public class ServerResponse {
         }
     }
 
+    // --- ADMIN ---
     public static class AdminInfo extends ServerResponse {
         public String adminPayload;
         public List<UserAccountInfo> userList;
@@ -123,6 +131,7 @@ public class ServerResponse {
         }
     }
 
+    // --- DTOs ---
     public static class UserAccountInfo {
         public String username;
         public String password;

@@ -53,7 +53,7 @@ public class GameHandler {
             }
         }
         
-        // 3. Logica Core
+        // 3. Logica 
         boolean found = false;
         Game.Group foundGroup = null;
 
@@ -109,7 +109,7 @@ public class GameHandler {
     
     private static void finishGame(ClientSession session, PlayerGameState state, boolean won) {
         state.setFinished(true);
-        state.setWon(won); // IMPORANTE: Salviamo l'esito nello stato
+        state.setWon(won); 
         UserManager.getInstance().updateGameResult(session.getUsername(), state.getScore(), state.getErrors(), won);
     }
 }

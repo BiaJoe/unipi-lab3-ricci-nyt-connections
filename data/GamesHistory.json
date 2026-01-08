@@ -1,145 +1,200 @@
 {
-  "-1": {
+  "0": {
     "gameData": {
-      "gameId": -1,
+      "gameId": 0,
       "groups": [
         {
-          "theme": "NUMERI 0-3",
+          "theme": "WET WEATHER",
           "words": [
-            "0",
-            "1",
-            "2",
-            "3"
+            "SNOW",
+            "HAIL",
+            "RAIN",
+            "SLEET"
           ]
         },
         {
-          "theme": "NUMERI 4-7",
+          "theme": "NBA TEAMS",
           "words": [
-            "4",
-            "5",
-            "6",
-            "7"
+            "HEAT",
+            "BUCKS",
+            "JAZZ",
+            "NETS"
           ]
         },
         {
-          "theme": "NUMERI 8-B",
+          "theme": "KEYBOARD KEYS",
           "words": [
-            "8",
-            "9",
-            "A",
-            "B"
+            "SHIFT",
+            "TAB",
+            "RETURN",
+            "OPTION"
           ]
         },
         {
-          "theme": "LETTERE C-F",
+          "theme": "PALINDROMES",
           "words": [
-            "C",
-            "D",
-            "E",
-            "F"
+            "LEVEL",
+            "KAYAK",
+            "RACECAR",
+            "MOM"
           ]
         }
       ]
     },
-    "runNumber": 84,
-    "playedAt": "2026-01-08T10:27:14.318993",
-    "startTimeMillis": 1767864434319,
+    "runNumber": 3,
+    "playedAt": "2026-01-08T17:55:40.911106",
+    "startTimeMillis": 1767891340911,
     "players": {
-      "B": {
+      "1": {
         "guessedThemes": [
-          "NUMERI 8-B",
-          "LETTERE C-F",
-          "NUMERI 4-7"
+          "KEYBOARD KEYS",
+          "PALINDROMES",
+          "WET WEATHER"
         ],
         "shuffledWords": [
-          "6",
-          "B",
-          "9",
-          "5",
-          "F",
-          "4",
-          "C",
-          "E",
-          "7",
-          "0",
-          "1",
-          "2",
-          "D",
-          "8",
-          "3",
-          "A"
+          "LEVEL",
+          "KAYAK",
+          "RACECAR",
+          "NETS",
+          "BUCKS",
+          "TAB",
+          "OPTION",
+          "SNOW",
+          "RETURN",
+          "HEAT",
+          "SHIFT",
+          "SLEET",
+          "HAIL",
+          "MOM",
+          "RAIN",
+          "JAZZ"
         ],
-        "errors": 4,
+        "errors": 2,
+        "finished": true,
+        "won": true
+      },
+      "2": {
+        "guessedThemes": [
+          "NBA TEAMS",
+          "WET WEATHER"
+        ],
+        "shuffledWords": [
+          "HEAT",
+          "SLEET",
+          "SNOW",
+          "RAIN",
+          "OPTION",
+          "KAYAK",
+          "TAB",
+          "SHIFT",
+          "BUCKS",
+          "MOM",
+          "RACECAR",
+          "JAZZ",
+          "NETS",
+          "RETURN",
+          "LEVEL",
+          "HAIL"
+        ],
+        "errors": 5,
+        "finished": true,
+        "won": false
+      },
+      "Super": {
+        "guessedThemes": [
+          "KEYBOARD KEYS",
+          "PALINDROMES",
+          "WET WEATHER"
+        ],
+        "shuffledWords": [
+          "BUCKS",
+          "OPTION",
+          "MOM",
+          "TAB",
+          "HEAT",
+          "NETS",
+          "RETURN",
+          "SNOW",
+          "SLEET",
+          "JAZZ",
+          "RACECAR",
+          "HAIL",
+          "SHIFT",
+          "LEVEL",
+          "RAIN",
+          "KAYAK"
+        ],
+        "errors": 2,
         "finished": true,
         "won": true
       }
     }
   },
-  "-2": {
+  "1": {
     "gameData": {
-      "gameId": -2,
+      "gameId": 1,
       "groups": [
         {
-          "theme": "DECINA 10",
+          "theme": "FOOTWEAR",
           "words": [
-            "11",
-            "12",
-            "13",
-            "14"
+            "PUMP",
+            "LOAFER",
+            "BOOT",
+            "SNEAKER"
           ]
         },
         {
-          "theme": "DECINA 20",
+          "theme": "UNITS OF LENGTH",
           "words": [
-            "21",
-            "22",
-            "23",
-            "24"
+            "FOOT",
+            "LEAGUE",
+            "YARD",
+            "MILE"
           ]
         },
         {
-          "theme": "DECINA 30",
+          "theme": "MAGAZINES",
           "words": [
-            "31",
-            "32",
-            "33",
-            "34"
+            "TIME",
+            "US",
+            "PEOPLE",
+            "ESSENCE"
           ]
         },
         {
-          "theme": "DECINA 40",
+          "theme": "LETTER HOMOPHONES",
           "words": [
-            "41",
-            "42",
-            "43",
-            "44"
+            "SEA",
+            "WHY",
+            "ARE",
+            "QUEUE"
           ]
         }
       ]
     },
-    "runNumber": 75,
-    "playedAt": "2026-01-08T10:29:14.344938",
-    "startTimeMillis": 1767864554344,
+    "runNumber": 2,
+    "playedAt": "2026-01-08T17:43:51.417350",
+    "startTimeMillis": 1767890631417,
     "players": {
-      "B": {
+      "b": {
         "guessedThemes": [],
         "shuffledWords": [
-          "33",
-          "43",
-          "24",
-          "31",
-          "21",
-          "34",
-          "11",
-          "14",
-          "23",
-          "12",
-          "13",
-          "41",
-          "22",
-          "44",
-          "32",
-          "42"
+          "PEOPLE",
+          "WHY",
+          "MILE",
+          "US",
+          "QUEUE",
+          "ARE",
+          "SEA",
+          "ESSENCE",
+          "BOOT",
+          "LEAGUE",
+          "FOOT",
+          "YARD",
+          "TIME",
+          "LOAFER",
+          "SNEAKER",
+          "PUMP"
         ],
         "errors": 0,
         "finished": true,
@@ -147,71 +202,71 @@
       }
     }
   },
-  "-3": {
+  "2": {
     "gameData": {
-      "gameId": -3,
+      "gameId": 2,
       "groups": [
         {
-          "theme": "SERIE A",
+          "theme": "FACIAL FEATURES",
           "words": [
-            "A1",
-            "A2",
-            "A3",
-            "A4"
+            "MOUTH",
+            "NOSE",
+            "EYE",
+            "CHEEK"
           ]
         },
         {
-          "theme": "SERIE B",
+          "theme": "SYNONYMS FOR EAT",
           "words": [
-            "B1",
-            "B2",
-            "B3",
-            "B4"
+            "WOLF",
+            "CHOW",
+            "SCARF",
+            "GOBBLE"
           ]
         },
         {
-          "theme": "SERIE C",
+          "theme": "\"DOG BREEDS, INFORMALLY\"",
           "words": [
-            "C1",
-            "C2",
-            "C3",
-            "C4"
+            "LAB",
+            "POM",
+            "PIT",
+            "PEKE"
           ]
         },
         {
-          "theme": "SERIE D",
+          "theme": "MEMBERS OF A TRIO",
           "words": [
-            "D1",
-            "D2",
-            "D3",
-            "D4"
+            "AMIGO",
+            "STOOGE",
+            "KING",
+            "TENOR"
           ]
         }
       ]
     },
-    "runNumber": 71,
-    "playedAt": "2026-01-08T10:31:14.356669",
-    "startTimeMillis": 1767864674356,
+    "runNumber": 2,
+    "playedAt": "2026-01-08T17:45:51.427140",
+    "startTimeMillis": 1767890751427,
     "players": {
-      "B": {
+      "b": {
         "guessedThemes": [],
         "shuffledWords": [
-          "D1",
-          "B1",
-          "D2",
-          "A3",
-          "A4",
-          "B3",
-          "D4",
-          "C4",
-          "C1",
-          "B2",
-          "A1",
-          "A2",
-          "D3",
-          "C2",
-          "C3",
-          "B4"
+          "GOBBLE",
+          "CHOW",
+          "CHEEK",
+          "EYE",
+          "PIT",
+          "PEKE",
+          "AMIGO",
+          "POM",
+          "MOUTH",
+          "SCARF",
+          "STOOGE",
+          "WOLF",
+          "LAB",
+          "TENOR",
+          "NOSE",
+          "KING"
         ],
         "errors": 0,
         "finished": true,
@@ -219,98 +274,224 @@
       }
     }
   },
-  "-4": {
+  "3": {
     "gameData": {
-      "gameId": -4,
+      "gameId": 3,
       "groups": [
         {
-          "theme": "LETTERE SINGOLE",
+          "theme": "SNEAKER BRANDS",
           "words": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "PUMA",
+            "NIKE",
+            "REEBOK",
+            "ADIDAS"
           ]
         },
         {
-          "theme": "LETTERE DOPPIE",
+          "theme": "MUSICALS BEGINNING WITH “C”",
           "words": [
-            "AA",
-            "BB",
-            "CC",
-            "DD"
+            "CATS",
+            "CAROUSEL",
+            "CHICAGO",
+            "CABARET"
           ]
         },
         {
-          "theme": "LETTERE TRIPLE",
+          "theme": "CLEANING VERBS",
           "words": [
-            "AAA",
-            "BBB",
-            "CCC",
-            "DDD"
+            "DUST",
+            "MOP",
+            "SWEEP",
+            "VACUUM"
           ]
         },
         {
-          "theme": "LETTERE QUADRUPLE",
+          "theme": "___ MAN SUPERHEROES",
           "words": [
-            "AAAA",
-            "BBBB",
-            "CCCC",
-            "DDDD"
+            "SPIDER",
+            "IRON",
+            "SUPER",
+            "BAT"
           ]
         }
       ]
     },
-    "runNumber": 64,
-    "playedAt": "2026-01-08T10:14:21.143646",
-    "startTimeMillis": 1767863661143,
-    "players": {}
+    "runNumber": 1,
+    "playedAt": "2026-01-08T17:47:51.445839",
+    "startTimeMillis": 1767890871446,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "IRON",
+          "NIKE",
+          "ADIDAS",
+          "DUST",
+          "CAROUSEL",
+          "SPIDER",
+          "CATS",
+          "SUPER",
+          "REEBOK",
+          "SWEEP",
+          "BAT",
+          "PUMA",
+          "CHICAGO",
+          "CABARET",
+          "VACUUM",
+          "MOP"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
-  "-5": {
+  "4": {
     "gameData": {
-      "gameId": -5,
+      "gameId": 4,
       "groups": [
         {
-          "theme": "SIMBOLI MATEMATICI",
+          "theme": "STREAMING SERVICES",
           "words": [
-            "+",
-            "-",
-            "*",
-            "/"
+            "PRIME",
+            "PEACOCK",
+            "HULU",
+            "NETFLIX"
           ]
         },
         {
-          "theme": "PUNTEGGIATURA",
+          "theme": "CONDIMENTS",
           "words": [
-            ".",
-            ",",
-            ";",
-            ":"
+            "TARTAR",
+            "RELISH",
+            "KETCHUP",
+            "MAYO"
           ]
         },
         {
-          "theme": "SPECIALI",
+          "theme": "SYNONYMS FOR SAD",
           "words": [
-            "@",
-            "#",
-            "$",
-            "%"
+            "BLUE",
+            "GLUM",
+            "DOWN",
+            "LOW"
           ]
         },
         {
-          "theme": "PARENTESI",
+          "theme": "CLUE CHARACTERS",
           "words": [
-            "()",
-            "[]",
-            "{}",
-            "\u003c\u003e"
+            "MUSTARD",
+            "PLUM",
+            "GREEN",
+            "SCARLET"
           ]
         }
       ]
     },
-    "runNumber": 60,
-    "playedAt": "2026-01-08T10:16:21.150267",
-    "startTimeMillis": 1767863781150,
-    "players": {}
+    "runNumber": 1,
+    "playedAt": "2026-01-08T17:49:51.455965",
+    "startTimeMillis": 1767890991456,
+    "players": {
+      "b": {
+        "guessedThemes": [
+          "STREAMING SERVICES",
+          "CONDIMENTS",
+          "SYNONYMS FOR SAD"
+        ],
+        "shuffledWords": [
+          "PLUM",
+          "BLUE",
+          "PRIME",
+          "KETCHUP",
+          "DOWN",
+          "TARTAR",
+          "LOW",
+          "GLUM",
+          "RELISH",
+          "NETFLIX",
+          "GREEN",
+          "SCARLET",
+          "MUSTARD",
+          "MAYO",
+          "PEACOCK",
+          "HULU"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": true
+      }
+    }
+  },
+  "5": {
+    "gameData": {
+      "gameId": 5,
+      "groups": [
+        {
+          "theme": "MONOPOLY SQUARES",
+          "words": [
+            "GO",
+            "CHANCE",
+            "JAIL",
+            "BOARDWALK"
+          ]
+        },
+        {
+          "theme": "SHADES OF BLUE",
+          "words": [
+            "BABY",
+            "ROYAL",
+            "MIDNIGHT",
+            "POWDER"
+          ]
+        },
+        {
+          "theme": "RAPPERS",
+          "words": [
+            "FUTURE",
+            "ICE CUBE",
+            "Q-TIP",
+            "COMMON"
+          ]
+        },
+        {
+          "theme": "MEMBERS OF A SEPTET",
+          "words": [
+            "WONDER",
+            "SIN",
+            "SEA",
+            "SISTER"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-08T17:51:51.466370",
+    "startTimeMillis": 1767891111466,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "MIDNIGHT",
+          "WONDER",
+          "ROYAL",
+          "SIN",
+          "CHANCE",
+          "ICE CUBE",
+          "SEA",
+          "BABY",
+          "SISTER",
+          "BOARDWALK",
+          "POWDER",
+          "GO",
+          "COMMON",
+          "Q-TIP",
+          "JAIL",
+          "FUTURE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   }
 }
