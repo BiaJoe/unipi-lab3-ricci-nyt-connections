@@ -20,20 +20,15 @@ public class GameHandler {
     public static String handleSubmitProposal(ClientRequest.SubmitProposal req, ClientSession session) {
         if (!session.isLoggedIn()) 
             return ResponseUtils.error("Non loggato", ResponseCodes.UNAUTHORIZED);
-            
         if (req.words == null || req.words.size() != 4) 
             return ResponseUtils.error("Servono 4 parole", ResponseCodes.BAD_REQUEST);
 
         GameMatch match = GameManager.getInstance().getCurrentMatch();
-        if (match == null) 
-            return ResponseUtils.error("Nessuna partita attiva", ResponseCodes.INTERNAL_SERVER_ERROR);
-            
-        if (match.getTimeLeft() <= 0) 
-            return ResponseUtils.error("Tempo scaduto", ResponseCodes.TIMEOUT);
+        if (match == null) return ResponseUtils.error("Nessuna partita attiva", ResponseCodes.INTERNAL_SERVER_ERROR);
+        if (match.getTimeLeft() <= 0) return ResponseUtils.error("Tempo scaduto", ResponseCodes.TIMEOUT);
 
         PlayerGameState state = match.getOrCreatePlayerState(session.getUsername());
-        if (state.isFinished()) 
-            return ResponseUtils.error("Hai già terminato la partita", ResponseCodes.GAME_FINISHED);
+        if (state.isFinished()) return ResponseUtils.error("Hai già terminato la partita", ResponseCodes.GAME_FINISHED);
 
         return processProposal(req.words, session, match, state);
     }
@@ -45,17 +40,14 @@ public class GameHandler {
         // 1. Validazione esistenza parole
         List<String> allGameWords = new ArrayList<>();
         for(Game.Group g : groups) allGameWords.addAll(g.getWords());
+        if (!allGameWords.containsAll(normalized)) return ResponseUtils.error("Parole non valide.", ResponseCodes.INVALID_WORDS);
         
-        if (!allGameWords.containsAll(normalized)) 
-            return ResponseUtils.error("Parole non valide.", ResponseCodes.INVALID_WORDS);
-        
-        // 2. Validazione duplicati su gruppi già trovati
+        // 2. Validazione duplicati
         for (String theme : state.getGuessedThemes()) {
             for (Game.Group g : groups) {
                 if (g.getTheme().equals(theme)) {
                     for (String w : normalized) {
-                        if (g.getWords().contains(w)) 
-                            return ResponseUtils.error("Parola già usata nel gruppo: " + theme, ResponseCodes.DUPLICATE_GUESS);
+                        if (g.getWords().contains(w)) return ResponseUtils.error("Parola già usata: " + theme, ResponseCodes.DUPLICATE_GUESS);
                     }
                 }
             }
@@ -67,7 +59,6 @@ public class GameHandler {
 
         for (Game.Group group : groups) {
             if (state.isThemeGuessed(group.getTheme())) continue;
-            
             if (group.getWords().containsAll(normalized) && normalized.containsAll(group.getWords())) {
                 found = true;
                 foundGroup = group;
@@ -86,9 +77,10 @@ public class GameHandler {
              groupTitle = foundGroup.getTheme();
              message = "Gruppo Trovato!";
              
-             // Vittoria al 3° gruppo (Punteggio basato su 3 gruppi: 18 punti)
+             // --- LOGICA VITTORIA CENTRALIZZATA ---
+             // Qui decidiamo che 3 gruppi bastano per vincere.
              if (state.getGroupsFoundCount() == 3) {
-                 finishGame(session, state, true);
+                 finishGame(session, state, true); // <--- Setta won=true
                  message = "VITTORIA!";
                  isFinished = true;
              }
@@ -97,18 +89,16 @@ public class GameHandler {
              isCorrect = false;
              message = "Sbagliato.";
              
-             // Sconfitta se SUPERI il massimo (al 5° errore)
+             // --- LOGICA SCONFITTA CENTRALIZZATA ---
              if (state.getErrors() > ServerConfig.MAX_ERRORS) {
-                 finishGame(session, state, false);
+                 finishGame(session, state, false); // <--- Setta won=false
                  message = "HAI PERSO (Troppi errori)";
                  isFinished = true;
              }
         }
         
-        // Risposta
         ServerResponse.Proposal resp = new ServerResponse.Proposal(isCorrect, groupTitle, state.getScore());
         resp.message = message;
-        
         if (isFinished) {
             resp.isFinished = true;
             resp.solution = ResponseUtils.buildSolution(match.getGameData());
@@ -119,6 +109,7 @@ public class GameHandler {
     
     private static void finishGame(ClientSession session, PlayerGameState state, boolean won) {
         state.setFinished(true);
+        state.setWon(won); // IMPORANTE: Salviamo l'esito nello stato
         UserManager.getInstance().updateGameResult(session.getUsername(), state.getScore(), state.getErrors(), won);
     }
 }

@@ -3,17 +3,17 @@
     "id": "d98a4a6e-ffad-46e3-82db-d5f7217ee994",
     "username": "B",
     "password": "M",
-    "puzzlesPlayed": 13,
-    "puzzlesWon": 3,
-    "currentStreak": 1,
+    "puzzlesPlayed": 18,
+    "puzzlesWon": 4,
+    "currentStreak": 0,
     "maxStreak": 1,
-    "totalScore": 30,
+    "totalScore": 32,
     "winDistribution": [
       1,
       0,
       1,
       0,
-      10
+      14
     ]
   },
   "7c7d9048-390b-455b-b0a1-ed6347faf69c": {

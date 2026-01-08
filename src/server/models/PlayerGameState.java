@@ -7,9 +7,10 @@ import java.util.Set;
 
 public class PlayerGameState {
     private final Set<String> guessedThemes = new HashSet<>();
-    private List<String> shuffledWords = new ArrayList<>(); // <--- NUOVO
+    private List<String> shuffledWords = new ArrayList<>();
     private int errors = 0;
     private boolean finished = false;
+    private boolean won = false; 
 
     // --- LOGICA DI GIOCO ---
 
@@ -26,6 +27,8 @@ public class PlayerGameState {
     }
 
     public int getScore() {
+        // Calcolo punteggio: (Gruppi * 6) - (Errori * 4)
+        // Se ho vinto con 3 gruppi, il sistema ne conta 3.
         return (guessedThemes.size() * 6) - (errors * 4);
     }
 
@@ -39,7 +42,10 @@ public class PlayerGameState {
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
     
-    // Gestione parole mescolate
     public List<String> getShuffledWords() { return shuffledWords; }
     public void setShuffledWords(List<String> words) { this.shuffledWords = words; }
+
+    // NUOVI GETTER/SETTER PER WON
+    public boolean hasWon() { return won; }
+    public void setWon(boolean won) { this.won = won; }
 }

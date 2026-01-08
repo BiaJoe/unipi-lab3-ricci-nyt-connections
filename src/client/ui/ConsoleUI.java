@@ -58,11 +58,40 @@ public class ConsoleUI implements ClientRenderer {
         System.out.println("Tempo Rimanente: " + info.timeLeft + "s");
         System.out.println("Errori Commessi: " + info.mistakes);
         System.out.println("Punteggio Attuale: " + info.currentScore);
-        System.out.println("Partita Finita: " + info.isFinished);
-        if (info.words != null && !info.words.isEmpty()) { System.out.println("\n--- GRIGLIA ---"); printGrid(info.words, info.correctGroups); }
-        if (info.correctGroups != null && !info.correctGroups.isEmpty()) { System.out.println("\n--- TUOI GRUPPI ---"); for(var g : info.correctGroups) System.out.println(" * " + g.theme + ": " + g.words); }
-        if (info.solution != null) { System.out.println("\n--- SOLUZIONE COMPLETA ---"); for (var g : info.solution) System.out.println(" * " + g.theme + ": " + g.words); }
-        if (info.playerResults != null) { System.out.println("\n--- CLASSIFICA PARTITA ---"); for (var p : info.playerResults) System.out.println(" - User: " + p.username + " | Score: " + p.score + " | Won: " + p.won); }
+        
+
+        if (Boolean.TRUE.equals(info.isFinished)) {
+            if (Boolean.TRUE.equals(info.isWinner)) {
+                System.out.println(GREEN + "Stato: VITTORIA!" + RESET);
+            } else {
+                System.out.println(RED + "Stato: PERSO (Tempo scaduto o troppi errori)" + RESET);
+            }
+        } else {
+            System.out.println("Stato: IN CORSO");
+        }
+
+        if (info.words != null && !info.words.isEmpty()) {
+            System.out.println("\n--- GRIGLIA ---");
+            printGrid(info.words, info.correctGroups);
+        }
+
+        if (info.correctGroups != null && !info.correctGroups.isEmpty()) {
+            System.out.println("\n--- TUOI GRUPPI ---");
+            for(var g : info.correctGroups) System.out.println(" * " + g.theme + ": " + g.words);
+        }
+
+        if (info.solution != null) {
+            System.out.println("\n--- SOLUZIONE COMPLETA ---");
+            for (var g : info.solution) System.out.println(" * " + g.theme + ": " + g.words);
+        }
+
+        if (info.playerResults != null) {
+            System.out.println("\n--- CLASSIFICA PARTITA ---");
+            for (var p : info.playerResults) {
+                String esito = p.won ? (GREEN + "VITTORIA" + RESET) : (RED + "PERSO" + RESET);
+                System.out.println(" - User: " + p.username + " | Score: " + p.score + " | " + esito);
+            }
+        }
         printPrompt();
     }
 

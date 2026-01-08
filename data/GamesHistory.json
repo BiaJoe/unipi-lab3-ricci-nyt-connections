@@ -41,36 +41,37 @@
         }
       ]
     },
-    "runNumber": 83,
-    "playedAt": "2026-01-08T10:20:06.286908",
-    "startTimeMillis": 1767864006286,
+    "runNumber": 84,
+    "playedAt": "2026-01-08T10:27:14.318993",
+    "startTimeMillis": 1767864434319,
     "players": {
       "B": {
         "guessedThemes": [
           "NUMERI 8-B",
-          "NUMERI 4-7",
-          "NUMERI 0-3"
+          "LETTERE C-F",
+          "NUMERI 4-7"
         ],
         "shuffledWords": [
-          "7",
-          "A",
-          "D",
+          "6",
+          "B",
           "9",
-          "4",
-          "F",
-          "8",
           "5",
+          "F",
+          "4",
           "C",
           "E",
-          "3",
-          "1",
+          "7",
           "0",
-          "6",
+          "1",
           "2",
-          "B"
+          "D",
+          "8",
+          "3",
+          "A"
         ],
-        "errors": 0,
-        "finished": true
+        "errors": 4,
+        "finished": true,
+        "won": true
       }
     }
   },
@@ -116,10 +117,35 @@
         }
       ]
     },
-    "runNumber": 73,
-    "playedAt": "2026-01-08T10:10:21.137649",
-    "startTimeMillis": 1767863421137,
-    "players": {}
+    "runNumber": 75,
+    "playedAt": "2026-01-08T10:29:14.344938",
+    "startTimeMillis": 1767864554344,
+    "players": {
+      "B": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "33",
+          "43",
+          "24",
+          "31",
+          "21",
+          "34",
+          "11",
+          "14",
+          "23",
+          "12",
+          "13",
+          "41",
+          "22",
+          "44",
+          "32",
+          "42"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "-3": {
     "gameData": {
@@ -163,10 +189,35 @@
         }
       ]
     },
-    "runNumber": 69,
-    "playedAt": "2026-01-08T10:12:21.139651",
-    "startTimeMillis": 1767863541139,
-    "players": {}
+    "runNumber": 71,
+    "playedAt": "2026-01-08T10:31:14.356669",
+    "startTimeMillis": 1767864674356,
+    "players": {
+      "B": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "D1",
+          "B1",
+          "D2",
+          "A3",
+          "A4",
+          "B3",
+          "D4",
+          "C4",
+          "C1",
+          "B2",
+          "A1",
+          "A2",
+          "D3",
+          "C2",
+          "C3",
+          "B4"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "-4": {
     "gameData": {
