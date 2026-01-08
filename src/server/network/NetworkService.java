@@ -26,7 +26,7 @@ public class NetworkService {
     private final UdpSender udpSender;
     private volatile boolean running = true;
 
-    // FIX CONCORRENZA: Manteniamo le sessioni in un Set Thread-Safe separato dal Selector
+    // sessioni in un Set Thread-Safe separato dal Selector
     private final Set<ClientSession> activeSessions = ConcurrentHashMap.newKeySet();
 
     public NetworkService() {
@@ -108,12 +108,12 @@ public class NetworkService {
         }
     }
 
-    // ORA QUESTO METODO È THREAD-SAFE per il GameScheduler
+    
     public Collection<ClientSession> getAllSessions() {
         return Collections.unmodifiableCollection(activeSessions);
     }
 
-    // --- INVIO RISPOSTE ---
+    // invio risposte 
 
     public void sendUdpResponse(ServerResponse.Event event) {
         udpSender.broadcast(event, getAllSessions());

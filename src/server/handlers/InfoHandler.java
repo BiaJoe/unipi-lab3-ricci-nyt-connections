@@ -1,9 +1,9 @@
 package server.handlers;
 
-import server.GameManager;
 import server.models.ClientSession;
 import server.models.GameMatch;
 import server.models.PlayerGameState;
+import server.services.GameManager;
 import utils.ClientRequest;
 
 public class InfoHandler {

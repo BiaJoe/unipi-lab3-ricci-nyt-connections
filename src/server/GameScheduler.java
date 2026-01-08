@@ -2,12 +2,14 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import server.handlers.ResponseUtils; // Importante: Nuova Factory
+import server.handlers.ResponseUtils; 
 import server.models.ClientSession;
 import server.models.Game;
 import server.models.GameMatch;
 import server.models.PlayerGameState;
 import server.network.NetworkService;
+import server.services.GameManager;
+import server.services.UserManager;
 import server.ui.ServerLogger;
 import utils.ServerResponse;
 
@@ -35,30 +37,28 @@ public class GameScheduler implements Runnable {
                 reader.beginArray();
                 
                 while (reader.hasNext() && running) {
-                    // 1. Leggiamo il Blueprint dal JSON
+                    // Leggo il Blueprint dal JSON
                     Game g = gson.fromJson(reader, Game.class);
                     
-                    // 2. Impostiamo la partita nel Manager
+                    // Imposto la partita nel Manager
                     GameManager manager = GameManager.getInstance();
                     manager.setCurrentGame(g);
                     GameMatch currentMatch = manager.getCurrentMatch();
 
                     ServerLogger.game("NUOVA PARTITA ID: " + g.getGameId() + " (Run #" + currentMatch.getRunNumber() + ")");
 
-                    // 3. Inizializzazione Giocatori Connessi
-                    // Non serve più "bindare" lo stato alla sessione.
-                    // Basta assicurarsi che lo stato esista nel Match per chi è già loggato.
+                    // Inizializzazione Giocatori Connessi
                     for (ClientSession session : netService.getAllSessions()) {
                         if (session.isLoggedIn()) {
                             currentMatch.getOrCreatePlayerState(session.getUsername());
                         }
                     }
                     
-                    // 4. Notifiche Start (UDP + TCP Push)
+                    // Notifiche Start
                     notifyNewGameUDP();
                     broadcastTcpGameUpdate(currentMatch); 
 
-                    // 5. Attesa Durata Partita
+                    // Attesa Durata Partita
                     try {
                         Thread.sleep(ServerConfig.GAME_DURATION * 1000L);
                     } catch (InterruptedException e) {
@@ -66,7 +66,7 @@ public class GameScheduler implements Runnable {
                         break;
                     }
 
-                    // 6. Fine Partita (Timeout)
+                    // Fine Partita (Timeout)
                     handleGameEndUDP(currentMatch); // Passiamo il match per controllare chi ha finito
                     broadcastTcpGameUpdate(currentMatch); // Aggiornamento finale con risultati
                 }
@@ -88,7 +88,7 @@ public class GameScheduler implements Runnable {
     }
 
     private void handleGameEndUDP(GameMatch match) {
-        // Aggiorniamo le statistiche per chi è andato in Timeout
+        // Aggiorno le statistiche per chi è andato in Timeout
         if (match != null) {
             for(ClientSession session : netService.getAllSessions()) {
                 if(session.isLoggedIn()) {
@@ -108,16 +108,16 @@ public class GameScheduler implements Runnable {
         netService.sendUdpResponse(event);
     }
 
-    // --- AGGIORNAMENTO TCP ---
+    // AGGIORNAMENTO TCP 
     private void broadcastTcpGameUpdate(GameMatch match) {
         if (match == null) return;
 
         for (ClientSession session : netService.getAllSessions()) {
             if (session.isLoggedIn()) {
-                // Recuperiamo lo stato DAL MATCH
+                // Recupero lo stato da match
                 PlayerGameState pState = match.getOrCreatePlayerState(session.getUsername());
                 
-                // Usiamo ResponseUtils per costruire il JSON (non più InfoHandler)
+                // Uso ResponseUtils per costruire il JSON
                 ServerResponse.GameInfoData info = ResponseUtils.buildGameInfo(match, pState);
                 
                 netService.sendTcpResponse(session, ResponseUtils.toJson(info));

@@ -8,6 +8,10 @@ import utils.ServerResponse;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Thread che ascolta su connessione TCP tutte le informazioni del server 
+ * E le manda alla UI per essere manifestate all'utente
+ */
 public class TcpListener implements Runnable {
     private final NetworkManager net;
     private final ClientRenderer ui;
@@ -28,7 +32,12 @@ public class TcpListener implements Runnable {
             
             while (net.getTcpChannel().isOpen()) {
                 int read = net.getTcpChannel().read(buffer);
-                if (read == -1) { handleDisconnection("Server disconnesso."); break; }
+
+                // gestisco disconnessione del server in modo pulito
+                if (read == -1) { 
+                    handleDisconnection("Server disconnesso."); 
+                    break; 
+                }
                 
                 if (read > 0) {
                     buffer.flip();
@@ -38,10 +47,12 @@ public class TcpListener implements Runnable {
                     buffer.clear();
 
                     while (true) {
-                        int idx = sb.indexOf("\n");
-                        if (idx == -1) break;
-                        String json = sb.substring(0, idx).trim();
-                        sb.delete(0, idx + 1);
+                        // estraggio il json dalla stringa di risposta
+                        int i = sb.indexOf("\n");
+                        if (i == -1) break;
+                        String json = sb.substring(0, i).trim();
+                        sb.delete(0, i + 1);
+
                         if (!json.isEmpty()) handleResponse(json);
                     }
                 }
@@ -60,10 +71,11 @@ public class TcpListener implements Runnable {
     private void handleResponse(String json) {
         try {
             JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
-            if (!obj.has("objectCode")) return;
+            if (!obj.has("objectCode")) return; // per essere una risposta valida deve esserci il campo objectCode
 
-            String code = obj.get("objectCode").getAsString();
+            String code = obj.get("objectCode").getAsString(); // trovo il tipo di risposta
 
+            // gestisco ogni risposta 
             switch (code) {
                 case "RES_ERROR": ui.showError(gson.fromJson(obj, ServerResponse.Error.class).message); break;
                 case "RES_GENERIC": ui.showMessage(gson.fromJson(obj, ServerResponse.Generic.class).message); break;

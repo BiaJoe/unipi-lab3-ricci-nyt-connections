@@ -10,7 +10,7 @@ public class User {
     private String username;
     private String password;
 
-    // --- DATI STATISTICHE ---
+    // STATISTICHE 
     private int puzzlesPlayed;
     private int puzzlesWon;
     private int currentStreak;
@@ -48,7 +48,7 @@ public class User {
     public int getMaxStreak() { return maxStreak; }
     public int[] getWinDistribution() { return winDistribution; }
 
-    // --- LOGICA GIOCO (Thread-Safe) ---
+    // LOGICA GIOCO 
 
     public synchronized void addWin(int errorsMade, int pointsEarned) {
         this.puzzlesPlayed++;
@@ -73,6 +73,5 @@ public class User {
         
         // Reset Streak
         this.currentStreak = 0;
-
     }
 }

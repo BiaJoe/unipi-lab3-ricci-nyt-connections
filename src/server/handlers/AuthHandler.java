@@ -1,14 +1,17 @@
 package server.handlers;
 
-import server.GameManager;
-import server.UserManager;
 import server.models.ClientSession;
 import server.models.GameMatch;
 import server.models.PlayerGameState;
+import server.services.GameManager;
+import server.services.UserManager;
 import server.ui.ServerLogger;
 import utils.ClientRequest;
 import utils.ServerResponse;
 
+/**
+ * Gestisce login e registrazione
+ */
 public class AuthHandler {
 
     public static String handleRegister(ClientRequest.Register req, ClientSession session) {
@@ -21,7 +24,6 @@ public class AuthHandler {
             ServerLogger.info("Nuovo utente registrato: " + req.name);
             
             // Auto Login immediato dopo la registrazione
-            // Nota: register() non logga automaticamente nel UserManager, quindi facciamo login esplicito
             UserManager.getInstance().login(req.name, req.psw);
             
             return completeLoginProcess(session, req.name, 0, "Registrazione avvenuta. Benvenuto!");

@@ -1,7 +1,9 @@
 package server;
 
 import server.network.NetworkService;
+import server.services.GameManager;
 import server.services.PersistenceService;
+import server.services.UserManager;
 import server.ui.ServerLogger;
 
 import java.io.IOException;
@@ -35,19 +37,19 @@ public class ServerMain {
     }
 
     public void start() throws IOException {
-        // 1. Avvia Servizio Persistenza
+        // Servizio Persistenza
         persistenceService.start();
 
-        // 2. Avvia Scheduler Gioco
+        // Scheduler Gioco
         gameScheduler = new GameScheduler(networkService);
         new Thread(gameScheduler).start();
 
-        // 3. Avvia Listener Console (exit)
+        // Listener Console (exit)
         startConsoleListener();
         
-        // 4. Avvia Rete
-        networkService.init();  // <--- IMPORTANTE: Inizializza il selector
-        networkService.start(); // <--- BLOCCANTE: Il main thread si ferma qui
+        // Rete
+        networkService.init();  // Inizializza il selector
+        networkService.start(); // Il main thread si ferma qui
         
         // Questa riga viene raggiunta solo se networkService.start() termina (es. errore)
         // Ma per l'exit manuale ci pensa il thread console.
@@ -59,8 +61,7 @@ public class ServerMain {
             try (Scanner s = new Scanner(System.in)) {
                 while (true) {
                     if (s.hasNextLine() && "exit".equalsIgnoreCase(s.nextLine().trim())) {
-                        // Chiudiamo tutto centralmente con close()
-                        // Questo terminerà il processo forzatamente
+                        // Chiudo tutto centralmente con close()
                         close(); 
                         break;
                     }

@@ -1,10 +1,12 @@
-package server;
+package server.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import server.ServerConfig;
 import server.models.Game;
-import server.models.GameMatch; // La nuova classe unica
+import server.models.GameMatch; 
 import server.models.PlayerGameState;
 import server.ui.ServerLogger;
 
@@ -15,6 +17,9 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 
+ */
 public class GameManager {
     private static GameManager instance;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();

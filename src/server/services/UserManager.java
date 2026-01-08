@@ -1,8 +1,10 @@
-package server;
+package server.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import server.ServerConfig;
 import server.models.User;
 import server.ui.ServerLogger;
 import utils.ServerResponse.RankingEntry;
@@ -15,6 +17,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+
+/**
+ * Dove si immagazzinano gli utenti e si fanno query di dati (es: leaderboard)
+ */
 public class UserManager {
     private static UserManager instance;
     private ConcurrentHashMap<String, User> usersById; 
@@ -34,7 +40,7 @@ public class UserManager {
         return instance;
     }
 
-    // --- ADMIN METHOD ---
+    // ADMIN 
     public List<UserAccountInfo> getUserListDebug() {
         List<UserAccountInfo> list = new ArrayList<>();
         for (User u : usersById.values()) {
@@ -43,7 +49,7 @@ public class UserManager {
         return list;
     }
 
-    // --- STANDARD METHODS ---
+    // STANDARD METHODS 
     public boolean login(String username, String password) {
         String id = usernameIndex.get(username);
         if (id == null) return false;
@@ -86,10 +92,9 @@ public class UserManager {
         if (id != null) {
             usersById.computeIfPresent(id, (k, user) -> {
                 if (won) {
-                    // Aggiorna istogramma (0,1,2,3,4 errori)
+                    // Aggiorno istogramma (0,1,2,3,4 errori)
                     user.addWin(errors, points); 
                 } else {
-                    // Non aggiorna istogramma
                     user.addLoss(points);
                 }
                 return user;

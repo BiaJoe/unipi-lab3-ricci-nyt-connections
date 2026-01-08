@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class ConsoleUI implements ClientRenderer {
 
-    // --- ANSI COLORS ---
+    // ANSI COLORS 
     private static final String RESET  = "\033[0m";
     private static final String CYAN   = "\033[0;36m";
     private static final String RED    = "\033[0;31m";
@@ -22,7 +22,7 @@ public class ConsoleUI implements ClientRenderer {
     private static final String YELLOW = "\033[0;33m";
     private static final String PURPLE = "\033[0;35m";
 
-    // --- STRINGHE COSTANTI ---
+    // STRINGHE COSTANTI 
     private static final String APP_TITLE = CYAN + "###### The " + YELLOW + "NEW" + CYAN + " New York Times Connections ######" + RESET;
     private static final String HEADER_HELP = "\n" + CYAN + "# COMANDI DISPONIBILI" + RESET;
     
@@ -43,8 +43,10 @@ public class ConsoleUI implements ClientRenderer {
     private static final String HEADER_ADMIN_USERS  = CYAN + "# UTENTI REGISTRATI" + RESET;
     private static final String HEADER_ADMIN_ORACLE = CYAN + "# SOLUZIONE CORRENTE" + RESET;
 
+    // file che contengono immagini decorative txt
     private final String trophyFile;
-    private final String skeletonFile; // NUOVO CAMPO
+    private final String skeletonFile; 
+
     private Integer currentGameId = null;
 
     public ConsoleUI(ClientConfig config) {
@@ -52,20 +54,23 @@ public class ConsoleUI implements ClientRenderer {
         this.skeletonFile = config.skeletonFile;
     }
 
+    // loop che ascolta da linea di comando e manda i comandi al CommandProcessor
     public void runInputLoop(CommandProcessor processor) {
         displayLn("\n");
         displayLn(APP_TITLE);
-        processor.processInput("/help");
+        processor.processInput("/help"); // stampo il tutorial
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
                 if (!scanner.hasNextLine()) break;
                 String line = scanner.nextLine().trim();
-                if (line.isEmpty()) { printPrompt(); continue; }
+                if (line.isEmpty()) { printPrompt(); continue; } // ignoro linee vuote
                 if (!processor.processInput(line)) break;
             }
         }
     }
 
+    // stampo le proprietà dei comandi, 
+    // se si aggiunge un comando questo si aggiorna da solo
     @Override
     public void showHelp(Collection<Command> commands) {
         displayLn(HEADER_HELP);
@@ -89,28 +94,34 @@ public class ConsoleUI implements ClientRenderer {
         printPrompt();
     }
 
+    // mostra le informazioni di una partita qualsiasi
+    // con un minimo di logica per distinguere partite finite da non finite
     @Override
     public void showGameInfo(ServerResponse.GameInfoData info) {          
         if (currentGameId == null || !currentGameId.equals(info.gameId)) {
             currentGameId = info.gameId; 
             displayLn(BANNER_GAME_INFO); 
         }
+
+        // dati generali
         displayLn(String.format("ID PARTITA        %d", info.gameId));
-        displayLn(String.format("Tempo Rimanente   %ds", info.timeLeft));
+        displayLn(String.format("Tempo Rimanente   %s", info.isFinished ? "finita" : info.timeLeft + "s"));
         displayLn(String.format("Errori Commessi   %d", info.mistakes));
         displayLn(String.format("Punteggio         %d", info.currentScore));
         
+        // parole da ordinare formattate a griglia
         if (info.words != null && !info.words.isEmpty()) {
             displayLn(HEADER_GRID);
             printGrid(info.words, info.correctGroups);
         }
         
+        // gruppi già trovati
         if (info.correctGroups != null && !info.correctGroups.isEmpty()) {
             displayLn(HEADER_GROUPS);
             for(var g : info.correctGroups) displayLn(" * " + g.theme + ": " + g.words);
         }
 
-        // Partita finita
+        // se siamo a Partita finita stampo esito, soluìone, risultati di chi ci ha giocato
         if (info.isFinished) {
             String esito = Boolean.TRUE.equals(info.isWinner) ? (GREEN + "VITTORIA!" + RESET) : (RED + "PERSO" + RESET);
             displayLn(String.format("ESITO: %s (Score: %d)", esito, info.currentScore));
@@ -131,6 +142,8 @@ public class ConsoleUI implements ClientRenderer {
         printPrompt();
     }
 
+    // dopo un gruppo proposto dice se è giusto o sbagliato
+    // la logica serve per stampare la notifica di vittoria o sconfitta
     @Override
     public void showSubmitResult(ServerResponse.Proposal p) {
         String esito = Boolean.TRUE.equals(p.isCorrect) 
@@ -146,7 +159,7 @@ public class ConsoleUI implements ClientRenderer {
                 displayLn(GREEN + "\nVITTORIA!!!" + RESET);
                 printFile(trophyFile);
             } else {
-                // SCONFITTA (isCorrect = false e isFinished = true)
+                // SCONFITTA 
                 displayLn(RED + "\nHAI PERSO (Troppi errori)" + RESET);
                 printFile(skeletonFile);
             }
@@ -155,6 +168,8 @@ public class ConsoleUI implements ClientRenderer {
         displayLn("");
         printPrompt();
     }
+
+    // Metodi per stampare tabelle di informazioni
 
     @Override
     public void showGameStats(ServerResponse.GameStats s) {
@@ -179,12 +194,12 @@ public class ConsoleUI implements ClientRenderer {
         displayLn(String.format("%-20s %d", "Max Streak", s.maxStreak));
         displayLn(String.format("%-20s %d", "Perfect Puzzles", s.perfectPuzzles));
         
-        // ISTOGRAMMA (Solo Vittorie: 0, 1, 2, 3, 4 errori)
+        // ISTOGRAMMA con distribuzioni di errori delle vittorie (vinto con 0...4 errori)
         if (s.mistakeHistogram != null) {
             displayLn("\nWinning Mistake Distribution:");
             for (int i = 0; i < s.mistakeHistogram.length; i++) {
                 int count = s.mistakeHistogram[i];
-                String label = String.valueOf(i); // Semplicemente 0, 1, 2, 3, 4
+                String label = String.valueOf(i); //  0, 1, 2, 3, 4
                 
                 int visualCount = Math.min(count, 30);
                 String bar = "#".repeat(Math.max(0, visualCount));
@@ -212,12 +227,16 @@ public class ConsoleUI implements ClientRenderer {
         printPrompt();
     }
 
+    // notifiche UDP ricevute dal server
+    // passano tutte per qui, 
+    // è sufficiente modificare queste due righe per non farle apparire
     @Override
     public void showNotification(String message) {
         displayLn("\n" + CYAN + "[NOTIFICA] " + message + RESET); 
         printPrompt();
     }
 
+    // metodo per mostrare informazioni richieste dan un Admin user
     @Override
     public void showAdminInfo(ServerResponse.AdminInfo info) {
         displayLn(HEADER_ADMIN_SECRET);
@@ -244,6 +263,7 @@ public class ConsoleUI implements ClientRenderer {
         System.out.printf("$ ");   
     }
     
+    // metodo per stampare la griglia di parole versione pretty
     private void printGrid(List<String> words, List<ServerResponse.GroupData> correctGroups) {
         Set<String> guessedWords = new HashSet<>();
         if (correctGroups != null) {
@@ -272,6 +292,10 @@ public class ConsoleUI implements ClientRenderer {
              displayLn("[FILE NOT FOUND: " + path + "]"); 
         }
     }
+
+    // wrapper di Stdout, 
+    // in implementazioni future potrebbero essere l'inizio 
+    // di un sistema UI più complesso
 
     private void displayLn(String msg) {
         display(msg + "\n");

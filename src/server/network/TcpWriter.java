@@ -13,15 +13,15 @@ public class TcpWriter {
     public static void send(SelectionKey key, String rawJson, NetworkService service) {
         if (key == null || !key.isValid()) return;
 
-        // Recupera info destinatario
+        // info destinatario
         ClientSession session = (ClientSession) key.attachment();
         String recipient = (session != null && session.getUsername() != null) 
                            ? session.getUsername() : "Anonimo";
 
-        // 1. LOGGING (Delega al Logger la formattazione)
+        // logging 
         ServerLogger.logTraffic("[TCP OUT] -> " + recipient, rawJson);
 
-        // 2. INVIO RETE (Usa rawJson compatto + newline)
+        // Invio 
         try {
             String messageWithTerminator = rawJson + "\n";
             ByteBuffer buffer = ByteBuffer.wrap(messageWithTerminator.getBytes());

@@ -46,7 +46,7 @@ public class GameMatch {
         return Math.max(0, remaining);
     }
 
-    // --- SNAPSHOT CON MEDIA E VITTORIA CORRETTA ---
+    // SNAPSHOT CON MEDIA E VITTORIA CORRETTA
     public StatsSnapshot getStatsSnapshot() {
         int active = 0, finished = 0, won = 0;
         float totalScore = 0;

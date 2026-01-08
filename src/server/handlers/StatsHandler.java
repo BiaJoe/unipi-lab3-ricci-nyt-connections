@@ -1,10 +1,10 @@
 package server.handlers;
 
-import server.GameManager;
-import server.UserManager;
 import server.models.ClientSession;
 import server.models.GameMatch;
 import server.models.User;
+import server.services.GameManager;
+import server.services.UserManager;
 import utils.ClientRequest;
 import utils.ServerResponse;
 import utils.ResponseCodes;

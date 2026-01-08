@@ -13,7 +13,7 @@ import java.util.Set;
 public class ServerLogger {
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    // --- COLORI ANSI ---
+    // COLORI ANSI 
     private static final String RESET  = "\u001B[0m";
     private static final String GREEN  = "\u001B[32m"; 
     private static final String RED    = "\u001B[31m"; 
@@ -29,7 +29,7 @@ public class ServerLogger {
         return String.format("%s[%s %s]%s", color, timestamp(), label, RESET);
     }
 
-    // --- LOGGING STANDARD ---
+    // LOGGING 
 
     public static void info(String msg) {
         System.out.println(getColoredTag(GREEN, "INFO") + " " + msg);
@@ -42,8 +42,6 @@ public class ServerLogger {
     public static void game(String msg) {
         System.out.println(getColoredTag(BLUE, "GAME") + " " + msg);
     }
-
-    // --- LOGGING TRAFFICO ---
 
     public static void logTraffic(String header, String rawJson) {
         String color = CYAN; // Default OUT
@@ -63,11 +61,11 @@ public class ServerLogger {
             formattedJson = rawJson;
         }
 
-        // Stampa il tag colorato e a capo il JSON
+        // Stampo il tag colorato e a capo il JSON
         System.out.println(getColoredTag(color, cleanHeader) + "\n" + formattedJson);
     }
 
-    // --- FORMATTAZIONE JSON (Liste Orizzontali) ---
+    // FORMATTAZIONE JSON per avere liste orizzontali e non verticali
 
     private static void formatJsonCustom(StringBuilder sb, JsonElement el, String indent) {
         if (el.isJsonPrimitive()) {

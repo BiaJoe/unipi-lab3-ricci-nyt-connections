@@ -1,17 +1,20 @@
 package server.handlers;
 
-import server.GameManager;
 import server.ServerConfig;
-import server.UserManager;
 import server.models.ClientSession;
 import server.models.Game;
 import server.models.GameMatch;
+import server.services.GameManager;
+import server.services.UserManager;
 import utils.ClientRequest;
 import utils.ResponseCodes;
 import utils.ServerResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  Gestisce l'interazione con richieste fatte da qualcuno a conoscenza dei comandi admin
+ */
 public class AdminHandler {
 
     private static boolean checkAuth(String inputPsw) {
@@ -24,13 +27,13 @@ public class AdminHandler {
         GameMatch match = GameManager.getInstance().getCurrentMatch();
         if (match == null) return ResponseUtils.error("Nessuna partita attiva", 404);
 
-        // Creiamo la lista strutturata dei gruppi
+        // lista dei gruppi
         List<ServerResponse.GroupData> groups = new ArrayList<>();
         for (Game.Group g : match.getGameData().getGroups()) {
             groups.add(new ServerResponse.GroupData(g.getTheme(), g.getWords()));
         }
         
-        // Costruiamo la risposta
+        // risposta
         ServerResponse.AdminInfo resp = new ServerResponse.AdminInfo();
         resp.oracleData = groups; // Assegniamo la lista al campo specifico
         resp.message = "Soluzione Oracle";

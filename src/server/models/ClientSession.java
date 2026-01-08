@@ -30,10 +30,8 @@ public class ClientSession {
         this.state = state;
     }
 
-    // --- METODI MANCANTI AGGIUNTI ---
-
     public void resetGameStatus() {
-        // Scollega lo stato corrente (usato al logout o cambio partita)
+        // Scollega lo stato corrente 
         this.state = null;
     }
 
@@ -41,8 +39,6 @@ public class ClientSession {
         if (state != null) return state.getGuessedThemes();
         return Collections.emptySet(); // Ritorna set vuoto per sicurezza
     }
-
-    // --- DELEGATE METHODS (Passano la chiamata allo stato) ---
 
     public int getErrors() {
         return (state != null) ? state.getErrors() : 0;
@@ -72,7 +68,6 @@ public class ClientSession {
         if (state != null) state.setFinished(finished);
     }
 
-    // --- GETTER & SETTER STANDARD ---
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     

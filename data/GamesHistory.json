@@ -41,94 +41,10 @@
         }
       ]
     },
-    "runNumber": 3,
-    "playedAt": "2026-01-08T17:55:40.911106",
-    "startTimeMillis": 1767891340911,
-    "players": {
-      "1": {
-        "guessedThemes": [
-          "KEYBOARD KEYS",
-          "PALINDROMES",
-          "WET WEATHER"
-        ],
-        "shuffledWords": [
-          "LEVEL",
-          "KAYAK",
-          "RACECAR",
-          "NETS",
-          "BUCKS",
-          "TAB",
-          "OPTION",
-          "SNOW",
-          "RETURN",
-          "HEAT",
-          "SHIFT",
-          "SLEET",
-          "HAIL",
-          "MOM",
-          "RAIN",
-          "JAZZ"
-        ],
-        "errors": 2,
-        "finished": true,
-        "won": true
-      },
-      "2": {
-        "guessedThemes": [
-          "NBA TEAMS",
-          "WET WEATHER"
-        ],
-        "shuffledWords": [
-          "HEAT",
-          "SLEET",
-          "SNOW",
-          "RAIN",
-          "OPTION",
-          "KAYAK",
-          "TAB",
-          "SHIFT",
-          "BUCKS",
-          "MOM",
-          "RACECAR",
-          "JAZZ",
-          "NETS",
-          "RETURN",
-          "LEVEL",
-          "HAIL"
-        ],
-        "errors": 5,
-        "finished": true,
-        "won": false
-      },
-      "Super": {
-        "guessedThemes": [
-          "KEYBOARD KEYS",
-          "PALINDROMES",
-          "WET WEATHER"
-        ],
-        "shuffledWords": [
-          "BUCKS",
-          "OPTION",
-          "MOM",
-          "TAB",
-          "HEAT",
-          "NETS",
-          "RETURN",
-          "SNOW",
-          "SLEET",
-          "JAZZ",
-          "RACECAR",
-          "HAIL",
-          "SHIFT",
-          "LEVEL",
-          "RAIN",
-          "KAYAK"
-        ],
-        "errors": 2,
-        "finished": true,
-        "won": true
-      }
-    }
+    "runNumber": 4,
+    "playedAt": "2026-01-08T21:14:55.012863",
+    "startTimeMillis": 1767903295012,
+    "players": {}
   },
   "1": {
     "gameData": {
@@ -172,35 +88,10 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T17:43:51.417350",
-    "startTimeMillis": 1767890631417,
-    "players": {
-      "b": {
-        "guessedThemes": [],
-        "shuffledWords": [
-          "PEOPLE",
-          "WHY",
-          "MILE",
-          "US",
-          "QUEUE",
-          "ARE",
-          "SEA",
-          "ESSENCE",
-          "BOOT",
-          "LEAGUE",
-          "FOOT",
-          "YARD",
-          "TIME",
-          "LOAFER",
-          "SNEAKER",
-          "PUMP"
-        ],
-        "errors": 0,
-        "finished": true,
-        "won": false
-      }
-    }
+    "runNumber": 4,
+    "playedAt": "2026-01-08T21:24:55.023947",
+    "startTimeMillis": 1767903895024,
+    "players": {}
   },
   "2": {
     "gameData": {
@@ -244,35 +135,10 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T17:45:51.427140",
-    "startTimeMillis": 1767890751427,
-    "players": {
-      "b": {
-        "guessedThemes": [],
-        "shuffledWords": [
-          "GOBBLE",
-          "CHOW",
-          "CHEEK",
-          "EYE",
-          "PIT",
-          "PEKE",
-          "AMIGO",
-          "POM",
-          "MOUTH",
-          "SCARF",
-          "STOOGE",
-          "WOLF",
-          "LAB",
-          "TENOR",
-          "NOSE",
-          "KING"
-        ],
-        "errors": 0,
-        "finished": true,
-        "won": false
-      }
-    }
+    "runNumber": 4,
+    "playedAt": "2026-01-08T21:34:55.030246",
+    "startTimeMillis": 1767904495030,
+    "players": {}
   },
   "3": {
     "gameData": {
@@ -316,35 +182,10 @@
         }
       ]
     },
-    "runNumber": 1,
-    "playedAt": "2026-01-08T17:47:51.445839",
-    "startTimeMillis": 1767890871446,
-    "players": {
-      "b": {
-        "guessedThemes": [],
-        "shuffledWords": [
-          "IRON",
-          "NIKE",
-          "ADIDAS",
-          "DUST",
-          "CAROUSEL",
-          "SPIDER",
-          "CATS",
-          "SUPER",
-          "REEBOK",
-          "SWEEP",
-          "BAT",
-          "PUMA",
-          "CHICAGO",
-          "CABARET",
-          "VACUUM",
-          "MOP"
-        ],
-        "errors": 0,
-        "finished": true,
-        "won": false
-      }
-    }
+    "runNumber": 3,
+    "playedAt": "2026-01-08T21:44:55.033263",
+    "startTimeMillis": 1767905095033,
+    "players": {}
   },
   "4": {
     "gameData": {
@@ -388,39 +229,10 @@
         }
       ]
     },
-    "runNumber": 1,
-    "playedAt": "2026-01-08T17:49:51.455965",
-    "startTimeMillis": 1767890991456,
-    "players": {
-      "b": {
-        "guessedThemes": [
-          "STREAMING SERVICES",
-          "CONDIMENTS",
-          "SYNONYMS FOR SAD"
-        ],
-        "shuffledWords": [
-          "PLUM",
-          "BLUE",
-          "PRIME",
-          "KETCHUP",
-          "DOWN",
-          "TARTAR",
-          "LOW",
-          "GLUM",
-          "RELISH",
-          "NETFLIX",
-          "GREEN",
-          "SCARLET",
-          "MUSTARD",
-          "MAYO",
-          "PEACOCK",
-          "HULU"
-        ],
-        "errors": 0,
-        "finished": true,
-        "won": true
-      }
-    }
+    "runNumber": 3,
+    "playedAt": "2026-01-08T21:54:55.042777",
+    "startTimeMillis": 1767905695042,
+    "players": {}
   },
   "5": {
     "gameData": {
@@ -464,34 +276,432 @@
         }
       ]
     },
+    "runNumber": 3,
+    "playedAt": "2026-01-08T22:04:55.049749",
+    "startTimeMillis": 1767906295049,
+    "players": {}
+  },
+  "6": {
+    "gameData": {
+      "gameId": 6,
+      "groups": [
+        {
+          "theme": "LEG PARTS",
+          "words": [
+            "KNEE",
+            "ANKLE",
+            "SHIN",
+            "THIGH"
+          ]
+        },
+        {
+          "theme": "BABY ANIMALS",
+          "words": [
+            "CUB",
+            "JOEY",
+            "CALF",
+            "KID"
+          ]
+        },
+        {
+          "theme": "SLANG FOR TOILET",
+          "words": [
+            "JOHN",
+            "THRONE",
+            "HEAD",
+            "CAN"
+          ]
+        },
+        {
+          "theme": "___ FISH THAT AREN’T FISH",
+          "words": [
+            "STAR",
+            "SILVER",
+            "JELLY",
+            "CRAY"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T22:14:55.056737",
+    "startTimeMillis": 1767906895056,
+    "players": {}
+  },
+  "7": {
+    "gameData": {
+      "gameId": 7,
+      "groups": [
+        {
+          "theme": "BOARD GAMES",
+          "words": [
+            "CHESS",
+            "GO",
+            "CHECKERS",
+            "BACKGAMMON"
+          ]
+        },
+        {
+          "theme": "MATTRESS SIZES",
+          "words": [
+            "KING",
+            "TWIN",
+            "QUEEN",
+            "FULL"
+          ]
+        },
+        {
+          "theme": "THINGS THAT ARE RED",
+          "words": [
+            "FIRE TRUCK",
+            "RUBY",
+            "CHERRY",
+            "STOP SIGN"
+          ]
+        },
+        {
+          "theme": "THINGS WITH KEYS",
+          "words": [
+            "LOCKSMITH",
+            "PIANO",
+            "FLORIDA",
+            "CRYPTOGRAPHY"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T22:24:55.064823",
+    "startTimeMillis": 1767907495064,
+    "players": {}
+  },
+  "8": {
+    "gameData": {
+      "gameId": 8,
+      "groups": [
+        {
+          "theme": "SPORTS",
+          "words": [
+            "SQUASH",
+            "CRICKET",
+            "POLO",
+            "FENCING"
+          ]
+        },
+        {
+          "theme": "TOPS",
+          "words": [
+            "TEE",
+            "TANK",
+            "CAMI",
+            "HALTER"
+          ]
+        },
+        {
+          "theme": "VEGETABLES",
+          "words": [
+            "CARROT",
+            "CORN",
+            "ONION",
+            "BEET"
+          ]
+        },
+        {
+          "theme": "INSECTS",
+          "words": [
+            "ANT",
+            "MANTIS",
+            "BEETLE",
+            "TERMITE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T22:34:55.070822",
+    "startTimeMillis": 1767908095070,
+    "players": {}
+  },
+  "9": {
+    "gameData": {
+      "gameId": 9,
+      "groups": [
+        {
+          "theme": "FRUIT",
+          "words": [
+            "KIWI",
+            "ORANGE",
+            "DATE",
+            "LEMON"
+          ]
+        },
+        {
+          "theme": "COUNTRIES",
+          "words": [
+            "JORDAN",
+            "GEORGIA",
+            "TOGO",
+            "CHAD"
+          ]
+        },
+        {
+          "theme": "BIRDS",
+          "words": [
+            "TURKEY",
+            "JAY",
+            "CRANE",
+            "SWALLOW"
+          ]
+        },
+        {
+          "theme": "ZODIAC SYMBOLS",
+          "words": [
+            "TWINS",
+            "GOAT",
+            "SCALES",
+            "FISH"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T22:44:55.077461",
+    "startTimeMillis": 1767908695077,
+    "players": {}
+  },
+  "10": {
+    "gameData": {
+      "gameId": 10,
+      "groups": [
+        {
+          "theme": "SPICES BEGINNING WITH “C”",
+          "words": [
+            "CUMIN",
+            "CORIANDER",
+            "CLOVE",
+            "CARDAMOM"
+          ]
+        },
+        {
+          "theme": "TERMS OF ENDEARMENT",
+          "words": [
+            "SUGAR",
+            "BOO",
+            "SWEETIE",
+            "HONEY"
+          ]
+        },
+        {
+          "theme": "THINGS WITH WINGS",
+          "words": [
+            "ANGEL",
+            "BIRD",
+            "AIRPLANE",
+            "PEGASUS"
+          ]
+        },
+        {
+          "theme": "SPICE GIRLS",
+          "words": [
+            "GINGER",
+            "BABY",
+            "SCARY",
+            "POSH"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T22:54:55.076733",
+    "startTimeMillis": 1767909295076,
+    "players": {}
+  },
+  "11": {
+    "gameData": {
+      "gameId": 11,
+      "groups": [
+        {
+          "theme": "ANIMAL GROUP NAMES",
+          "words": [
+            "SCHOOL",
+            "PACK",
+            "FLOCK",
+            "POD"
+          ]
+        },
+        {
+          "theme": "DEADLY SINS",
+          "words": [
+            "LUST",
+            "PRIDE",
+            "GREED",
+            "ENVY"
+          ]
+        },
+        {
+          "theme": "SLOW ANIMALS",
+          "words": [
+            "SLOTH",
+            "SNAIL",
+            "LORIS",
+            "TORTOISE"
+          ]
+        },
+        {
+          "theme": "TRIG FUNCTIONS",
+          "words": [
+            "TAN",
+            "SEC",
+            "COT",
+            "SIN"
+          ]
+        }
+      ]
+    },
+    "runNumber": 2,
+    "playedAt": "2026-01-08T23:04:55.081900",
+    "startTimeMillis": 1767909895081,
+    "players": {}
+  },
+  "12": {
+    "gameData": {
+      "gameId": 12,
+      "groups": [
+        {
+          "theme": "AIRLINES",
+          "words": [
+            "FRONTIER",
+            "SPIRIT",
+            "VIRGIN",
+            "UNITED"
+          ]
+        },
+        {
+          "theme": "GREEK LETTERS",
+          "words": [
+            "IOTA",
+            "DELTA",
+            "CHI",
+            "BETA"
+          ]
+        },
+        {
+          "theme": "SILENT “G”",
+          "words": [
+            "GNOME",
+            "GNOCCHI",
+            "GNAW",
+            "GNAT"
+          ]
+        },
+        {
+          "theme": "HOMOPHONES",
+          "words": [
+            "KNEW",
+            "NEW",
+            "NU",
+            "GNU"
+          ]
+        }
+      ]
+    },
     "runNumber": 1,
-    "playedAt": "2026-01-08T17:51:51.466370",
-    "startTimeMillis": 1767891111466,
-    "players": {
-      "b": {
-        "guessedThemes": [],
-        "shuffledWords": [
-          "MIDNIGHT",
-          "WONDER",
-          "ROYAL",
-          "SIN",
-          "CHANCE",
-          "ICE CUBE",
-          "SEA",
-          "BABY",
-          "SISTER",
-          "BOARDWALK",
-          "POWDER",
-          "GO",
-          "COMMON",
-          "Q-TIP",
-          "JAIL",
-          "FUTURE"
-        ],
-        "errors": 0,
-        "finished": true,
-        "won": false
-      }
-    }
+    "playedAt": "2026-01-08T23:14:55.084633",
+    "startTimeMillis": 1767910495084,
+    "players": {}
+  },
+  "13": {
+    "gameData": {
+      "gameId": 13,
+      "groups": [
+        {
+          "theme": "BEDS",
+          "words": [
+            "CANOPY",
+            "MURPHY",
+            "BUNK",
+            "TRUNDLE"
+          ]
+        },
+        {
+          "theme": "FAMOUS BROTHERS",
+          "words": [
+            "MARX",
+            "WRIGHT",
+            "JONAS",
+            "WARNER"
+          ]
+        },
+        {
+          "theme": "HONDAS",
+          "words": [
+            "PASSPORT",
+            "PILOT",
+            "ACCORD",
+            "CIVIC"
+          ]
+        },
+        {
+          "theme": "VIDEO GAME CHARACTERS",
+          "words": [
+            "LINK",
+            "SONIC",
+            "CRASH",
+            "MARIO"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-08T23:24:55.087893",
+    "startTimeMillis": 1767911095087,
+    "players": {}
+  },
+  "14": {
+    "gameData": {
+      "gameId": 14,
+      "groups": [
+        {
+          "theme": "BIRD SOUNDS",
+          "words": [
+            "TWEET",
+            "CAW",
+            "CHIRP",
+            "CLUCK"
+          ]
+        },
+        {
+          "theme": "COLORS",
+          "words": [
+            "BROWN",
+            "PINK",
+            "VIOLET",
+            "TURQUOISE"
+          ]
+        },
+        {
+          "theme": "FISHING GEAR",
+          "words": [
+            "ROD",
+            "TACKLE",
+            "REEL",
+            "LURE"
+          ]
+        },
+        {
+          "theme": "FICTIONAL PIRATES",
+          "words": [
+            "SILVER",
+            "SPARROW",
+            "HOOK",
+            "JONES"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-08T23:34:55.094163",
+    "startTimeMillis": 1767911695094,
+    "players": {}
   }
 }

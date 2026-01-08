@@ -1,12 +1,12 @@
 package server.handlers;
 
-import server.GameManager;
 import server.ServerConfig;
-import server.UserManager;
 import server.models.ClientSession;
 import server.models.GameMatch;
 import server.models.Game;
 import server.models.PlayerGameState;
+import server.services.GameManager;
+import server.services.UserManager;
 import utils.ClientRequest;
 import utils.ServerResponse;
 import utils.ResponseCodes; 
@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * gestisce la logica di gopcp
+ */
 public class GameHandler {
 
     public static String handleSubmitProposal(ClientRequest.SubmitProposal req, ClientSession session) {
@@ -37,12 +40,12 @@ public class GameHandler {
         List<String> normalized = userWords.stream().map(String::toUpperCase).collect(Collectors.toList());
         Game.Group[] groups = match.getGameData().getGroups().toArray(new Game.Group[0]); 
         
-        // 1. Validazione esistenza parole
+        // Validazione esistenza parole
         List<String> allGameWords = new ArrayList<>();
         for(Game.Group g : groups) allGameWords.addAll(g.getWords());
         if (!allGameWords.containsAll(normalized)) return ResponseUtils.error("Parole non valide.", ResponseCodes.INVALID_WORDS);
         
-        // 2. Validazione duplicati
+        // Validazione duplicati
         for (String theme : state.getGuessedThemes()) {
             for (Game.Group g : groups) {
                 if (g.getTheme().equals(theme)) {
@@ -53,7 +56,7 @@ public class GameHandler {
             }
         }
         
-        // 3. Logica 
+        // Logica 
         boolean found = false;
         Game.Group foundGroup = null;
 
@@ -77,10 +80,9 @@ public class GameHandler {
              groupTitle = foundGroup.getTheme();
              message = "Gruppo Trovato!";
              
-             // --- LOGICA VITTORIA CENTRALIZZATA ---
-             // Qui decidiamo che 3 gruppi bastano per vincere.
+             // LOGICA VITTORIA CENTRALIZZATA
              if (state.getGroupsFoundCount() == 3) {
-                 finishGame(session, state, true); // <--- Setta won=true
+                 finishGame(session, state, true); 
                  message = "VITTORIA!";
                  isFinished = true;
              }
@@ -89,9 +91,9 @@ public class GameHandler {
              isCorrect = false;
              message = "Sbagliato.";
              
-             // --- LOGICA SCONFITTA CENTRALIZZATA ---
+             // LOGICA SCONFITTA CENTRALIZZATA
              if (state.getErrors() > ServerConfig.MAX_ERRORS) {
-                 finishGame(session, state, false); // <--- Setta won=false
+                 finishGame(session, state, false); 
                  message = "HAI PERSO (Troppi errori)";
                  isFinished = true;
              }

@@ -8,6 +8,9 @@ import server.models.ClientSession;
 import utils.ClientRequest;
 import utils.ResponseCodes;
 
+/**
+ * smista le varie richieste agli handler
+ */
 public class ClientRequestHandler {
     private static final Gson gson = new Gson();
 
@@ -40,7 +43,7 @@ public class ClientRequestHandler {
                 case "requestLeaderboard":
                     return StatsHandler.handleRequestLeaderboard(gson.fromJson(jsonInput, ClientRequest.Leaderboard.class), session);
                 
-                // --- ADMIN ---
+                // ADMIN
                 case "oracle":
                     return AdminHandler.handleOracle(gson.fromJson(jsonInput, ClientRequest.Oracle.class), session);
                 case "god":

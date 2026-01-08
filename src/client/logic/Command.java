@@ -22,8 +22,9 @@ public class Command {
     }
 
     public String getUsage() {
-        // Se è il comando speciale "submit", non mostriamo lo slash
+        // Se è il comando speciale "submit" non mostriamo lo slash
         if (name.equals("submit")) return args;
         return "/" + name + (args.isEmpty() ? "" : " " + args);
     }
 }
+

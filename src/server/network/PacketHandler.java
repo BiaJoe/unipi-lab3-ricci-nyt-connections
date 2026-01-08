@@ -10,17 +10,17 @@ import java.nio.channels.SocketChannel;
 public class PacketHandler {
         
     public static void processReceivedData(ClientSession session, byte[] data, NetworkService netService, SelectionKey key) {
-        // 1. Accoda i nuovi dati al buffer della sessione
+        // Accod i nuovi dati al buffer della sessione
         session.getBuffer().append(new String(data));
         
-        // 2. Loop per processare tutti i messaggi completi (che finiscono con \n)
+        // Loop per processare tutti i messaggi completi (che finiscono con \n)
         while (true) {
             String currentBuffer = session.getBuffer().toString();
             int newlineIndex = currentBuffer.indexOf('\n');
             
             if (newlineIndex == -1) break;
             
-            // 3. Estrai il messaggio JSON pulito
+            // il messaggio JSON pulito
             String jsonMessage = currentBuffer.substring(0, newlineIndex).trim();
             session.getBuffer().delete(0, newlineIndex + 1);
             
@@ -36,11 +36,10 @@ public class PacketHandler {
 
         ServerLogger.logJsonReceived(clientIp, json);
         
-        // 4. Invio al Thread Pool tramite il metodo wrapper di NetworkService
+        //Invio al Thread Pool tramite il metodo wrap di NetworkService
         netService.submitTask(() -> {
             try {
                 // Chiamata statica a ClientRequestHandler
-                // Passiamo 'session' perché serve per Login/Register/Info
                 String response = ClientRequestHandler.handleRequest(json, session);
                 
                 if (response != null) {

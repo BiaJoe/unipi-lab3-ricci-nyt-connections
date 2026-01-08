@@ -6,6 +6,10 @@ import utils.ServerResponse;
 import java.io.IOException;
 import java.net.DatagramPacket;
 
+/** 
+ * Ascolta notifiche dal server e le manda alla UI
+ * Vive in un Thread 
+*/ 
 public class UdpListener implements Runnable {
     private final NetworkManager net;
     private final ClientRenderer ui;
@@ -30,7 +34,7 @@ public class UdpListener implements Runnable {
                 String json = new String(packet.getData(), 0, packet.getLength());
                 ServerResponse resp = gson.fromJson(json, ServerResponse.class);
 
-                // Controllo robusto su objectCode
+                // Ccntrollo che objectCode sia il valore giusto
                 if ("RES_EVENT".equals(resp.objectCode) && resp.message != null) {
                     ui.showNotification(resp.message);
                 }
@@ -39,7 +43,7 @@ public class UdpListener implements Runnable {
                 if (net.getUdpSocket().isClosed()) break;
                 ui.showError("Errore UDP: " + e.getMessage());
             } catch (Exception e) {
-                // Ignora JSON malformati
+                // Ignoro altre eccezioni come JSON malformati
             }
         }
     }

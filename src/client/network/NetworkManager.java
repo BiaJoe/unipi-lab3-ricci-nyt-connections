@@ -9,6 +9,9 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Invia messaggi di richiesta al server
+ */
 public class NetworkManager {
     private SocketChannel tcpChannel;
     private DatagramSocket udpSocket;
@@ -30,6 +33,7 @@ public class NetworkManager {
         tcpChannel.configureBlocking(true); 
     }
 
+    // gestione di request sollevate dal Command Processor
     public void sendRequest(ClientRequest req) throws IOException {
         if (tcpChannel == null || !tcpChannel.isOpen()) {
             throw new IOException("Non connesso al server.");
@@ -40,6 +44,7 @@ public class NetworkManager {
         tcpChannel.write(ByteBuffer.wrap(message.getBytes()));
     }
 
+    // evito chiusure multiple
     public synchronized void close() {
         try { 
             if (udpSocket != null && !udpSocket.isClosed()) {
@@ -58,3 +63,4 @@ public class NetworkManager {
     public DatagramSocket getUdpSocket() { return udpSocket; }
     public int getLocalUdpPort() { return (udpSocket != null) ? udpSocket.getLocalPort() : 0; }
 }
+

@@ -6,11 +6,17 @@ import utils.ClientRequest;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * cuore logico del client
+ * permette di definire comandi e associarvi un metodo
+ * i comandi contengono delle stringhe 
+ * che la UI può usare per il tutorial /help
+ */
 public class CommandProcessor {
     private final NetworkManager net;
     private final ClientRenderer ui;
-    private final Map<String, Command> commandsList = new LinkedHashMap<>();
-    private final Map<String, Command> triggerMap = new HashMap<>();
+    private final Map<String, Command> commandsList = new LinkedHashMap<>(); // contiene i comandi e i loro nomi
+    private final Map<String, Command> triggerMap = new HashMap<>(); // contiene i comandi in formato trigger /comando
 
     public CommandProcessor(NetworkManager net, ClientRenderer ui) {
         this.net = net;
@@ -18,6 +24,7 @@ public class CommandProcessor {
         initCommands();
     }
 
+    // 0gni comando ha nome, alias per brevità, argomenti, descrizione (per tutorial)
     private void initCommands() {
         cmd("register",    "r",    "<user> <pass>",          "Registra un nuovo utente",   this::doRegister);
         cmd("login",       "l",    "<user> <pass>",          "Accedi al gioco",            this::doLogin);
@@ -31,7 +38,8 @@ public class CommandProcessor {
         cmd("help",        "h",    "",                       "Mostra questa lista",        this::doHelp);
         cmd("exit",        "e",    "",                       "Chiudi il client",           this::doExit);
         
-        // HIDDEN
+        // Comandi nascosti, il submit è sostituito dalla scrittura di 4 parole
+        // Gli altri sono per gli ADMIN
         hiddenCmd("submit", "", "", this::doSubmitFake);
         hiddenCmd("oracle", "<psw>", "Rivela soluzione", this::doOracle);
         hiddenCmd("god",    "<psw>", "Rivela utenti",    this::doGod);
@@ -50,11 +58,15 @@ public class CommandProcessor {
     }
 
     public boolean processInput(String line) {
-        String[] parts = line.trim().split("\\s+");
-        if (parts.length == 0 || parts[0].isEmpty()) return true;
+        // divido le parole usando il parser che rispetta le virgolette
+        List<String> tokens = parseArgs(line.trim());
+        if (tokens.isEmpty()) return true;
+        
+        String[] parts = tokens.toArray(new String[0]);
         String firstToken = parts[0];
 
         try {
+            // gestisco i comandi trigger /...
             if (firstToken.startsWith("/")) {
                 String key = firstToken.toLowerCase();
                 Command cmd = triggerMap.get(key);
@@ -63,6 +75,8 @@ public class CommandProcessor {
                     try { return cmd.handler.handle(args); } 
                     catch (IllegalArgumentException e) { ui.showError(e.getMessage()); }
                 } else { ui.showError("Comando sconosciuto: " + firstToken); }
+
+            // gestisco le parole proposte e le invio al server
             } else {
                 if (parts.length == 4) {
                     net.sendRequest(new ClientRequest.SubmitProposal(Arrays.asList(parts[0], parts[1], parts[2], parts[3])));
@@ -71,6 +85,34 @@ public class CommandProcessor {
         } catch (Exception e) { ui.showError("Errore comando: " + e.getMessage()); }
         return true; 
     }
+
+    // Metodo helper per tokenizzare rispettando le virgolette "PER PAROLE MULTIPLE"
+    private List<String> parseArgs(String input) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '"') {
+                inQuotes = !inQuotes; 
+            } else if (Character.isWhitespace(c) && !inQuotes) {
+                if (current.length() > 0) {
+                    tokens.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) tokens.add(current.toString());
+        return tokens;
+    }
+
+    // azioni legate ai comandi
+    // controllano la validità del comando
+    // eseguono la richiesta tramite network al server
+    // ritorno true se tutto può continuare 
 
     private boolean doRegister(String[] args) throws IOException {
         if (args.length != 2) throw new IllegalArgumentException("Usa: /register <user> <pass>");
@@ -129,7 +171,7 @@ public class CommandProcessor {
         return true;
     }
     
-    // Admin Commands
+    // Comandi dell'admin
     private boolean doOracle(String[] args) throws IOException {
         if (args.length != 1) throw new IllegalArgumentException("Usa: /oracle <admin_password>");
         net.sendRequest(new ClientRequest.Oracle(args[0]));
