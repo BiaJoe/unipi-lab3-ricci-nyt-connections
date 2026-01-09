@@ -1,4 +1,3 @@
-
 # Introduzione
 
 A seguire il mio progetto Java per l'esame di Laboratorio III. Nel progetto implemento l'architettura client-server multithread con Java NIO per implementare un clone del gioco Connections di New York Times. 
@@ -63,11 +62,11 @@ Il progetto è fornito completo di `Makefile` per l'automazione del build. Tutta
 
 ## Esecuzione Rapida 
 
-Nella cartella `/bin` sono già presenti i file eseguibili (`server.jar` e `client.jar`) compilati e pronti all'uso. Li ho fatti con il makefile e sono già legati alla libreria GSON.
+Nella cartella root del progetto sono già presenti i file eseguibili (`server.jar` e `client.jar`) compilati e pronti all'uso. Li ho fatti con il makefile e sono già legati alla libreria GSON.
 
 ```
-java -jar bin/server.jar
-java -jar bin/client.jar
+java -jar server.jar
+java -jar client.jar
 ```
 
 In terminali diversi. Poi si puossono aprire anche altri client.
