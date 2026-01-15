@@ -5,7 +5,7 @@ import java.util.List;
 public abstract class ClientRequest {
     public String operation;
 
-    // --- 1. GESTIONE UTENTE ---
+    // GESTIONE UTENTE
     public static class Register extends ClientRequest {
         public String name; public String psw;
         public Register(String name, String psw) { this.operation = "register"; this.name = name; this.psw = psw; }
@@ -24,13 +24,13 @@ public abstract class ClientRequest {
         }
     }
 
-    // --- 2. GESTIONE PARTITA ---
+    // GESTIONE PARTITA 
     public static class SubmitProposal extends ClientRequest {
         public List<String> words;
         public SubmitProposal(List<String> w) { this.operation = "submitProposal"; this.words = w; }
     }
     
-    // MODIFICATO: Supporta richiesta senza ID (corrente) e con ID (specifica)
+    // Supporta richiesta senza ID (corrente) e con ID (specifica)
     public static class GameInfo extends ClientRequest {
         public Integer gameId;
         
@@ -41,7 +41,7 @@ public abstract class ClientRequest {
         public GameInfo() { this.operation = "requestGameInfo"; this.gameId = null; }
     }
     
-    // MODIFICATO: Supporta richiesta senza ID (corrente) e con ID (specifica)
+    // Supporta richiesta senza ID (corrente) e con ID (specifica)
     public static class RequestGameStats extends ClientRequest {
         public Integer gameId;
         
@@ -52,7 +52,7 @@ public abstract class ClientRequest {
         public RequestGameStats() { this.operation = "requestGameStats"; this.gameId = null; }
     }
 
-    // --- 3. INFORMAZIONI GENERALI ---
+    // INFORMAZIONI GENERALI
     public static class PlayerStats extends ClientRequest {
         public PlayerStats() { this.operation = "requestPlayerStats"; }
     }
@@ -63,7 +63,7 @@ public abstract class ClientRequest {
         public Leaderboard(String name) { this.operation = "requestLeaderboard"; this.playerName = name; }
     }
 
-    // --- 4. COMANDI ADMIN (HIDDEN) ---
+    // COMANDI ADMIN (HIDDEN)
     public static class Oracle extends ClientRequest {
         public String password;
         public Oracle(String password) { this.operation = "oracle"; this.password = password; }
