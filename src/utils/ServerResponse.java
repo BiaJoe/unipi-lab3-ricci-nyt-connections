@@ -17,7 +17,7 @@ public class ServerResponse {
     public ServerResponse() {
     }
 
-    // --- ERROR & GENERIC ---
+    //  ERROR & GENERIC 
     public static class Error extends ServerResponse {
         public Error(String m, int c) {
             super("RES_ERROR", "ERROR", m);
@@ -31,7 +31,7 @@ public class ServerResponse {
         }
     }
 
-    // --- EVENT ---
+    //  EVENT 
     public static class Event extends ServerResponse {
         public Boolean isFinished;
 
@@ -40,7 +40,7 @@ public class ServerResponse {
         }
     }
 
-    // --- AUTH ---
+    //  AUTH 
     public static class Auth extends ServerResponse {
         public GameInfoData gameInfo;
 
@@ -50,7 +50,7 @@ public class ServerResponse {
         }
     }
 
-    // --- PROPOSAL ---
+    //  PROPOSAL 
     public static class Proposal extends ServerResponse {
         public Boolean isCorrect;
         public String groupTitle;
@@ -66,7 +66,7 @@ public class ServerResponse {
         }
     }
 
-    // --- INFO PARTITA ---
+    //  INFO PARTITA 
     public static class GameInfoData extends ServerResponse {
         public Integer gameId, timeLeft, mistakes, currentScore;
         public Boolean isFinished;
@@ -82,7 +82,7 @@ public class ServerResponse {
         }
     }
 
-    // --- STATS ---
+    //  STATS 
     public static class GameStats extends ServerResponse {
         public Integer gameId, timeLeft, playersActive, playersFinished, playersWon;
         public Float averageScore;
@@ -105,7 +105,7 @@ public class ServerResponse {
         }
     }
 
-    // --- LEADERBOARD ---
+    //  LEADERBOARD 
     public static class Leaderboard extends ServerResponse {
         public List<RankingEntry> ranking;
 
@@ -115,7 +115,7 @@ public class ServerResponse {
         }
     }
 
-    // --- ADMIN ---
+    //  ADMIN 
     public static class AdminInfo extends ServerResponse {
         public String adminPayload;
         public List<UserAccountInfo> userList;
@@ -131,7 +131,7 @@ public class ServerResponse {
         }
     }
 
-    // --- DTOs ---
+    //  DTOs 
     public static class UserAccountInfo {
         public String username;
         public String password;
