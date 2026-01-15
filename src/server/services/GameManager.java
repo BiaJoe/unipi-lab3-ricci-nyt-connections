@@ -24,10 +24,10 @@ public class GameManager {
     private static GameManager instance;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     
-    // PARTITA CORRENTE (L'istanza attiva)
+    // PARTITA CORRENTE 
     private GameMatch currentMatch;
 
-    // STORICO (ID Gioco -> Ultima istanza giocata GameMatch)
+    // STORICO 
     private ConcurrentHashMap<Integer, GameMatch> matchHistory;
 
     private GameManager() {
@@ -40,7 +40,7 @@ public class GameManager {
         return instance;
     }
 
-    // --- CICLO DI VITA ---
+    // CICLO DI VITA
 
     public synchronized void setCurrentGame(Game nextGameDef) {
         // 1. Archivia la partita precedente se esiste
@@ -59,7 +59,6 @@ public class GameManager {
         this.currentMatch = new GameMatch(nextGameDef, nextRun);
     }
 
-    // --- ACCESSORS ---
 
     // Ritorna il Match corrente (dove i player giocano ora)
     public synchronized GameMatch getCurrentMatch() { 
@@ -91,7 +90,7 @@ public class GameManager {
         return matchHistory.get(gameId);
     }
 
-    // --- PERSISTENZA ---
+    // PERSISTENZA
 
     private void loadHistory() {
         File file = new File(ServerConfig.HISTORY_FILE_PATH);
@@ -114,8 +113,6 @@ public class GameManager {
         
         try (FileWriter writer = new FileWriter(file)) {
             // Salviamo lo stato attuale dello storico
-            // Nota: Se vuoi salvare anche la partita IN CORSO in caso di crash,
-            // dovresti fare una put temporanea, ma per semplicità salviamo lo storico chiuso.
             gson.toJson(matchHistory, writer);
         } catch (IOException e) {
             ServerLogger.error("Errore salvataggio storico: " + e.getMessage());

@@ -10,12 +10,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection; // MODIFICATO: Importa Collection invece di List
+import java.util.Collection; 
 
 public class UdpSender {
     private final Gson gson = new Gson();
 
-    // MODIFICATO: Ora accetta Collection<ClientSession> invece di List
     public void broadcast(ServerResponse response, Collection<ClientSession> sessions) {
         if (sessions == null || sessions.isEmpty()) return;
 
@@ -24,10 +23,10 @@ public class UdpSender {
 
         try (DatagramSocket socket = new DatagramSocket()) {
             for (ClientSession session : sessions) {
-                // Inviamo solo agli utenti loggati che hanno una porta UDP valida (> 0)
+                // Invio solo agli utenti loggati che hanno una porta UDP valida (> 0)
                 if (session.isLoggedIn() && session.getUdpPort() > 0) {
                     try {
-                        // L'indirizzo IP lo prendiamo dal canale TCP associato
+                        // L'indirizzo IP lo prendo dal canale TCP associato
                         InetAddress address = session.getSelectionKey().channel() instanceof java.nio.channels.SocketChannel 
                                 ? ((java.nio.channels.SocketChannel) session.getSelectionKey().channel()).socket().getInetAddress()
                                 : InetAddress.getLocalHost(); // Fallback (es. test locale)

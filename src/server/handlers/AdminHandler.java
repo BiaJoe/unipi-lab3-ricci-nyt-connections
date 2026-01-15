@@ -36,7 +36,7 @@ public class AdminHandler {
         // risposta
         ServerResponse.AdminInfo resp = new ServerResponse.AdminInfo();
         resp.oracleData = groups; // Assegniamo la lista al campo specifico
-        resp.message = "Soluzione Oracle";
+        resp.message = "Soluzione  Oracle";
         
         return ResponseUtils.toJson(resp);
     }
