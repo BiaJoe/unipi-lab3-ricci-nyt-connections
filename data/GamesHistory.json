@@ -41,37 +41,33 @@
         }
       ]
     },
-    "runNumber": 6,
-    "playedAt": "2026-01-15T10:09:39.886534",
-    "startTimeMillis": 1768468179886,
+    "runNumber": 7,
+    "playedAt": "2026-01-16T08:31:03.009353",
+    "startTimeMillis": 1768548663009,
     "players": {
       "b": {
-        "guessedThemes": [
-          "KEYBOARD KEYS",
-          "NBA TEAMS",
-          "WET WEATHER"
-        ],
+        "guessedThemes": [],
         "shuffledWords": [
-          "MOM",
-          "BUCKS",
-          "RETURN",
-          "SNOW",
-          "NETS",
-          "JAZZ",
-          "SLEET",
-          "OPTION",
-          "HAIL",
-          "LEVEL",
           "RACECAR",
-          "SHIFT",
-          "KAYAK",
-          "RAIN",
+          "OPTION",
           "TAB",
-          "HEAT"
+          "LEVEL",
+          "KAYAK",
+          "MOM",
+          "SNOW",
+          "BUCKS",
+          "SHIFT",
+          "JAZZ",
+          "NETS",
+          "HEAT",
+          "RAIN",
+          "RETURN",
+          "SLEET",
+          "HAIL"
         ],
         "errors": 0,
         "finished": true,
-        "won": true
+        "won": false
       }
     }
   },
@@ -333,10 +329,35 @@
         }
       ]
     },
-    "runNumber": 4,
-    "playedAt": "2026-01-09T11:27:43.770203",
-    "startTimeMillis": 1767954463770,
-    "players": {}
+    "runNumber": 5,
+    "playedAt": "2026-01-15T11:04:21.442344",
+    "startTimeMillis": 1768471461442,
+    "players": {
+      "b": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "PEACOCK",
+          "PLUM",
+          "HULU",
+          "KETCHUP",
+          "SCARLET",
+          "BLUE",
+          "MAYO",
+          "LOW",
+          "NETFLIX",
+          "GLUM",
+          "GREEN",
+          "MUSTARD",
+          "PRIME",
+          "TARTAR",
+          "DOWN",
+          "RELISH"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "5": {
     "gameData": {
@@ -380,10 +401,63 @@
         }
       ]
     },
-    "runNumber": 4,
-    "playedAt": "2026-01-09T11:46:53.551884",
-    "startTimeMillis": 1767955613551,
-    "players": {}
+    "runNumber": 5,
+    "playedAt": "2026-01-15T12:22:37.160605",
+    "startTimeMillis": 1768476157160,
+    "players": {
+      "b": {
+        "guessedThemes": [
+          "RAPPERS",
+          "MONOPOLY SQUARES",
+          "MEMBERS OF A SEPTET"
+        ],
+        "shuffledWords": [
+          "COMMON",
+          "ICE CUBE",
+          "Q-TIP",
+          "WONDER",
+          "MIDNIGHT",
+          "POWDER",
+          "GO",
+          "JAIL",
+          "SEA",
+          "SISTER",
+          "SIN",
+          "FUTURE",
+          "BABY",
+          "ROYAL",
+          "BOARDWALK",
+          "CHANCE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": true
+      },
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "BOARDWALK",
+          "MIDNIGHT",
+          "SIN",
+          "POWDER",
+          "ICE CUBE",
+          "SEA",
+          "JAIL",
+          "COMMON",
+          "Q-TIP",
+          "ROYAL",
+          "GO",
+          "WONDER",
+          "FUTURE",
+          "SISTER",
+          "BABY",
+          "CHANCE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "6": {
     "gameData": {
@@ -427,10 +501,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T22:14:55.056737",
-    "startTimeMillis": 1767906895056,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T12:32:37.176542",
+    "startTimeMillis": 1768476757176,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "JOHN",
+          "JELLY",
+          "JOEY",
+          "THRONE",
+          "HEAD",
+          "SHIN",
+          "KID",
+          "CUB",
+          "CAN",
+          "CALF",
+          "ANKLE",
+          "KNEE",
+          "THIGH",
+          "CRAY",
+          "SILVER",
+          "STAR"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "7": {
     "gameData": {
@@ -474,10 +573,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T22:24:55.064823",
-    "startTimeMillis": 1767907495064,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T14:08:11.619144",
+    "startTimeMillis": 1768482491619,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "STOP SIGN",
+          "RUBY",
+          "CHECKERS",
+          "FLORIDA",
+          "CHESS",
+          "BACKGAMMON",
+          "CHERRY",
+          "FULL",
+          "GO",
+          "PIANO",
+          "FIRE TRUCK",
+          "CRYPTOGRAPHY",
+          "LOCKSMITH",
+          "KING",
+          "QUEEN",
+          "TWIN"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "8": {
     "gameData": {
@@ -521,10 +645,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T22:34:55.070822",
-    "startTimeMillis": 1767908095070,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T14:18:11.634978",
+    "startTimeMillis": 1768483091635,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "ANT",
+          "BEETLE",
+          "BEET",
+          "ONION",
+          "TANK",
+          "CARROT",
+          "MANTIS",
+          "CAMI",
+          "FENCING",
+          "POLO",
+          "TERMITE",
+          "CRICKET",
+          "CORN",
+          "SQUASH",
+          "TEE",
+          "HALTER"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "9": {
     "gameData": {
@@ -568,10 +717,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T22:44:55.077461",
-    "startTimeMillis": 1767908695077,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T14:28:11.650572",
+    "startTimeMillis": 1768483691650,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "DATE",
+          "CRANE",
+          "JAY",
+          "FISH",
+          "SCALES",
+          "TOGO",
+          "JORDAN",
+          "KIWI",
+          "TWINS",
+          "TURKEY",
+          "GOAT",
+          "CHAD",
+          "ORANGE",
+          "SWALLOW",
+          "LEMON",
+          "GEORGIA"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "10": {
     "gameData": {
@@ -615,10 +789,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T22:54:55.076733",
-    "startTimeMillis": 1767909295076,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T16:06:16.192150",
+    "startTimeMillis": 1768489576192,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "BIRD",
+          "POSH",
+          "SCARY",
+          "CARDAMOM",
+          "AIRPLANE",
+          "SWEETIE",
+          "CORIANDER",
+          "SUGAR",
+          "BOO",
+          "CLOVE",
+          "ANGEL",
+          "BABY",
+          "PEGASUS",
+          "GINGER",
+          "HONEY",
+          "CUMIN"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "11": {
     "gameData": {
@@ -662,10 +861,35 @@
         }
       ]
     },
-    "runNumber": 2,
-    "playedAt": "2026-01-08T23:04:55.081900",
-    "startTimeMillis": 1767909895081,
-    "players": {}
+    "runNumber": 3,
+    "playedAt": "2026-01-15T16:58:58.344151",
+    "startTimeMillis": 1768492738344,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "SEC",
+          "SIN",
+          "SLOTH",
+          "PACK",
+          "GREED",
+          "SNAIL",
+          "ENVY",
+          "TORTOISE",
+          "LORIS",
+          "FLOCK",
+          "COT",
+          "POD",
+          "TAN",
+          "LUST",
+          "PRIDE",
+          "SCHOOL"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "12": {
     "gameData": {
@@ -709,10 +933,35 @@
         }
       ]
     },
-    "runNumber": 1,
-    "playedAt": "2026-01-08T23:14:55.084633",
-    "startTimeMillis": 1767910495084,
-    "players": {}
+    "runNumber": 2,
+    "playedAt": "2026-01-15T17:08:58.353652",
+    "startTimeMillis": 1768493338353,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "KNEW",
+          "VIRGIN",
+          "GNOCCHI",
+          "FRONTIER",
+          "CHI",
+          "GNAT",
+          "IOTA",
+          "NEW",
+          "NU",
+          "BETA",
+          "GNAW",
+          "SPIRIT",
+          "UNITED",
+          "GNOME",
+          "DELTA",
+          "GNU"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "13": {
     "gameData": {
@@ -756,10 +1005,35 @@
         }
       ]
     },
-    "runNumber": 1,
-    "playedAt": "2026-01-08T23:24:55.087893",
-    "startTimeMillis": 1767911095087,
-    "players": {}
+    "runNumber": 2,
+    "playedAt": "2026-01-15T17:19:16.851654",
+    "startTimeMillis": 1768493956851,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "PASSPORT",
+          "WRIGHT",
+          "BUNK",
+          "PILOT",
+          "TRUNDLE",
+          "WARNER",
+          "LINK",
+          "MURPHY",
+          "JONAS",
+          "MARX",
+          "SONIC",
+          "CANOPY",
+          "ACCORD",
+          "CIVIC",
+          "CRASH",
+          "MARIO"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   },
   "14": {
     "gameData": {
@@ -803,9 +1077,970 @@
         }
       ]
     },
+    "runNumber": 2,
+    "playedAt": "2026-01-15T17:29:16.864079",
+    "startTimeMillis": 1768494556864,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "HOOK",
+          "TURQUOISE",
+          "SILVER",
+          "PINK",
+          "TACKLE",
+          "TWEET",
+          "VIOLET",
+          "CAW",
+          "SPARROW",
+          "CHIRP",
+          "REEL",
+          "BROWN",
+          "CLUCK",
+          "JONES",
+          "LURE",
+          "ROD"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "15": {
+    "gameData": {
+      "gameId": 15,
+      "groups": [
+        {
+          "theme": "COFFEE DRINKS",
+          "words": [
+            "ESPRESSO",
+            "LATTE",
+            "AMERICANO",
+            "CAPPUCCINO"
+          ]
+        },
+        {
+          "theme": "TREE NUTS",
+          "words": [
+            "ALMOND",
+            "PECAN",
+            "WALNUT",
+            "CASHEW"
+          ]
+        },
+        {
+          "theme": "SHADES OF GREEN",
+          "words": [
+            "FOREST",
+            "KELLY",
+            "EMERALD",
+            "OLIVE"
+          ]
+        },
+        {
+          "theme": "MR. ___",
+          "words": [
+            "BEAN",
+            "CLEAN",
+            "PEANUT",
+            "FOX"
+          ]
+        }
+      ]
+    },
     "runNumber": 1,
-    "playedAt": "2026-01-08T23:34:55.094163",
-    "startTimeMillis": 1767911695094,
-    "players": {}
+    "playedAt": "2026-01-15T17:39:16.874217",
+    "startTimeMillis": 1768495156874,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "EMERALD",
+          "CLEAN",
+          "CASHEW",
+          "FOREST",
+          "KELLY",
+          "CAPPUCCINO",
+          "BEAN",
+          "LATTE",
+          "ALMOND",
+          "PECAN",
+          "WALNUT",
+          "PEANUT",
+          "OLIVE",
+          "FOX",
+          "ESPRESSO",
+          "AMERICANO"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "16": {
+    "gameData": {
+      "gameId": 16,
+      "groups": [
+        {
+          "theme": "NECKWEAR",
+          "words": [
+            "SCARF",
+            "ASCOT",
+            "BOLO",
+            "TIE"
+          ]
+        },
+        {
+          "theme": "SHIP DIRECTIONS",
+          "words": [
+            "STERN",
+            "BOW",
+            "PORT",
+            "STARBOARD"
+          ]
+        },
+        {
+          "theme": "DETERGENTS",
+          "words": [
+            "TIDE",
+            "GAIN",
+            "ERA",
+            "ALL"
+          ]
+        },
+        {
+          "theme": "___ TRIANGLE",
+          "words": [
+            "BERMUDA",
+            "LOVE",
+            "RIGHT",
+            "ACUTE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T17:49:16.887208",
+    "startTimeMillis": 1768495756887,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "STARBOARD",
+          "STERN",
+          "BOW",
+          "LOVE",
+          "PORT",
+          "RIGHT",
+          "BERMUDA",
+          "SCARF",
+          "ASCOT",
+          "TIE",
+          "ALL",
+          "ERA",
+          "GAIN",
+          "TIDE",
+          "BOLO",
+          "ACUTE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "17": {
+    "gameData": {
+      "gameId": 17,
+      "groups": [
+        {
+          "theme": "\"MUSCLES, INFORMALLY\"",
+          "words": [
+            "QUAD",
+            "LAT",
+            "TRI",
+            "PEC"
+          ]
+        },
+        {
+          "theme": "AWARDS",
+          "words": [
+            "CUP",
+            "RIBBON",
+            "MEDAL",
+            "TROPHY"
+          ]
+        },
+        {
+          "theme": "TITLE TV DOCTORS",
+          "words": [
+            "GREY",
+            "HOUSE",
+            "QUINN",
+            "HOWSER"
+          ]
+        },
+        {
+          "theme": "NFL PLAYERS",
+          "words": [
+            "BILL",
+            "BEAR",
+            "COMMANDER",
+            "BROWN"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T19:38:26.935626",
+    "startTimeMillis": 1768502306935,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "BEAR",
+          "BROWN",
+          "HOWSER",
+          "BILL",
+          "LAT",
+          "MEDAL",
+          "COMMANDER",
+          "PEC",
+          "TRI",
+          "TROPHY",
+          "QUAD",
+          "HOUSE",
+          "CUP",
+          "RIBBON",
+          "QUINN",
+          "GREY"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "18": {
+    "gameData": {
+      "gameId": 18,
+      "groups": [
+        {
+          "theme": "OFF-WHITE SHADES",
+          "words": [
+            "CREAM",
+            "EGGSHELL",
+            "VANILLA",
+            "IVORY"
+          ]
+        },
+        {
+          "theme": "ANTI-VAMPIRE",
+          "words": [
+            "GARLIC",
+            "MIRROR",
+            "STAKE",
+            "CRUCIFIX"
+          ]
+        },
+        {
+          "theme": "KINDS OF MEAT",
+          "words": [
+            "PORK",
+            "BEEF",
+            "POULTRY",
+            "VENISON"
+          ]
+        },
+        {
+          "theme": "SYNONYMS FOR ARGUMENT",
+          "words": [
+            "ROW",
+            "SPAT",
+            "TIFF",
+            "QUARREL"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T19:48:26.940366",
+    "startTimeMillis": 1768502906940,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "CREAM",
+          "EGGSHELL",
+          "POULTRY",
+          "QUARREL",
+          "TIFF",
+          "IVORY",
+          "VENISON",
+          "PORK",
+          "BEEF",
+          "SPAT",
+          "VANILLA",
+          "CRUCIFIX",
+          "MIRROR",
+          "STAKE",
+          "ROW",
+          "GARLIC"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "19": {
+    "gameData": {
+      "gameId": 19,
+      "groups": [
+        {
+          "theme": "GRAINS",
+          "words": [
+            "OAT",
+            "BARLEY",
+            "SPELT",
+            "RYE"
+          ]
+        },
+        {
+          "theme": "ROYAL AND NOBLE TITLES",
+          "words": [
+            "KING",
+            "EARL",
+            "BARON",
+            "PRINCE"
+          ]
+        },
+        {
+          "theme": "UNIVERSITIES",
+          "words": [
+            "RICE",
+            "DUKE",
+            "BROWN",
+            "HOWARD"
+          ]
+        },
+        {
+          "theme": "BEST DIRECTOR OSCAR WINNERS",
+          "words": [
+            "STONE",
+            "BONG",
+            "FORD",
+            "LEE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T19:58:26.948292",
+    "startTimeMillis": 1768503506948,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "RICE",
+          "DUKE",
+          "EARL",
+          "BROWN",
+          "BONG",
+          "RYE",
+          "BARLEY",
+          "HOWARD",
+          "LEE",
+          "KING",
+          "BARON",
+          "FORD",
+          "STONE",
+          "OAT",
+          "PRINCE",
+          "SPELT"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "20": {
+    "gameData": {
+      "gameId": 20,
+      "groups": [
+        {
+          "theme": "MUSIC GENRES",
+          "words": [
+            "POP",
+            "RAP",
+            "JAZZ",
+            "PUNK"
+          ]
+        },
+        {
+          "theme": "WEB BROWSERS",
+          "words": [
+            "OPERA",
+            "SAFARI",
+            "CHROME",
+            "EDGE"
+          ]
+        },
+        {
+          "theme": "“LITTLE WOMEN” SISTERS",
+          "words": [
+            "JO",
+            "MEG",
+            "BETH",
+            "AMY"
+          ]
+        },
+        {
+          "theme": "LIL ___ RAPPERS",
+          "words": [
+            "BABY",
+            "WAYNE",
+            "KIM",
+            "JON"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T20:08:26.963567",
+    "startTimeMillis": 1768504106963,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "BABY",
+          "BETH",
+          "KIM",
+          "EDGE",
+          "POP",
+          "AMY",
+          "CHROME",
+          "RAP",
+          "SAFARI",
+          "WAYNE",
+          "JO",
+          "PUNK",
+          "JAZZ",
+          "MEG",
+          "JON",
+          "OPERA"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "21": {
+    "gameData": {
+      "gameId": 21,
+      "groups": [
+        {
+          "theme": "DOG BREEDS",
+          "words": [
+            "BOXER",
+            "HUSKY",
+            "DALMATIAN",
+            "POODLE"
+          ]
+        },
+        {
+          "theme": "ANIMAL NOSES",
+          "words": [
+            "TRUNK",
+            "MUZZLE",
+            "SNOUT",
+            "BEAK"
+          ]
+        },
+        {
+          "theme": "TRAFFIC SIGNS",
+          "words": [
+            "STOP",
+            "YIELD",
+            "DETOUR",
+            "SLOW"
+          ]
+        },
+        {
+          "theme": "SOUND ___",
+          "words": [
+            "BITE",
+            "WAVE",
+            "BARRIER",
+            "ASLEEP"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T20:18:26.977217",
+    "startTimeMillis": 1768504706977,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "TRUNK",
+          "DALMATIAN",
+          "BARRIER",
+          "DETOUR",
+          "POODLE",
+          "STOP",
+          "HUSKY",
+          "MUZZLE",
+          "ASLEEP",
+          "BOXER",
+          "BITE",
+          "BEAK",
+          "YIELD",
+          "SNOUT",
+          "WAVE",
+          "SLOW"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "22": {
+    "gameData": {
+      "gameId": 22,
+      "groups": [
+        {
+          "theme": "\u002760S BAND MEMBERS",
+          "words": [
+            "BEACH BOY",
+            "BEATLE",
+            "BYRD",
+            "MONKEE"
+          ]
+        },
+        {
+          "theme": "DANCE FADS",
+          "words": [
+            "TWIST",
+            "MASHED POTATO",
+            "DOUGIE",
+            "MACARENA"
+          ]
+        },
+        {
+          "theme": "MAGAZINES",
+          "words": [
+            "ROLLING STONE",
+            "WIRED",
+            "FORTUNE",
+            "VOGUE"
+          ]
+        },
+        {
+          "theme": "THINGS WITH LINKS",
+          "words": [
+            "CHAIN",
+            "WEBSITE",
+            "SAUSAGE",
+            "GOLF COURSE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T20:28:26.985100",
+    "startTimeMillis": 1768505306985,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "VOGUE",
+          "BEATLE",
+          "CHAIN",
+          "FORTUNE",
+          "DOUGIE",
+          "SAUSAGE",
+          "BEACH BOY",
+          "MASHED POTATO",
+          "GOLF COURSE",
+          "WIRED",
+          "WEBSITE",
+          "ROLLING STONE",
+          "MONKEE",
+          "BYRD",
+          "TWIST",
+          "MACARENA"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "23": {
+    "gameData": {
+      "gameId": 23,
+      "groups": [
+        {
+          "theme": "CANDY BARS",
+          "words": [
+            "MILKY WAY",
+            "BOUNTY",
+            "CRUNCH",
+            "HEATH"
+          ]
+        },
+        {
+          "theme": "VIDEO GAME CONSOLES",
+          "words": [
+            "GENESIS",
+            "SWITCH",
+            "WII",
+            "DREAMCAST"
+          ]
+        },
+        {
+          "theme": "EAR PARTS",
+          "words": [
+            "HAMMER",
+            "ANVIL",
+            "STIRRUP",
+            "COCHLEA"
+          ]
+        },
+        {
+          "theme": "BAND NAMES MINUS NUMBERS",
+          "words": [
+            "SUM",
+            "MAROON",
+            "U",
+            "BLINK"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T21:10:38.988532",
+    "startTimeMillis": 1768507838988,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "MILKY WAY",
+          "SWITCH",
+          "MAROON",
+          "CRUNCH",
+          "HEATH",
+          "STIRRUP",
+          "U",
+          "DREAMCAST",
+          "COCHLEA",
+          "WII",
+          "BLINK",
+          "GENESIS",
+          "SUM",
+          "BOUNTY",
+          "HAMMER",
+          "ANVIL"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "24": {
+    "gameData": {
+      "gameId": 24,
+      "groups": [
+        {
+          "theme": "DESSERTS",
+          "words": [
+            "MOUSSE",
+            "FLAN",
+            "TIRAMISU",
+            "CHEESECAKE"
+          ]
+        },
+        {
+          "theme": "MILD OATHS",
+          "words": [
+            "FUDGE",
+            "SHOOT",
+            "HECK",
+            "DARN"
+          ]
+        },
+        {
+          "theme": "ANIMALS WITH TUSKS",
+          "words": [
+            "ELEPHANT",
+            "NARWHAL",
+            "HIPPO",
+            "WARTHOG"
+          ]
+        },
+        {
+          "theme": "MUSTACHES",
+          "words": [
+            "WALRUS",
+            "HORSESHOE",
+            "PENCIL",
+            "HANDLEBAR"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T21:20:38.999659",
+    "startTimeMillis": 1768508438999,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "PENCIL",
+          "DARN",
+          "FUDGE",
+          "TIRAMISU",
+          "ELEPHANT",
+          "HANDLEBAR",
+          "HORSESHOE",
+          "WALRUS",
+          "MOUSSE",
+          "FLAN",
+          "SHOOT",
+          "WARTHOG",
+          "HIPPO",
+          "NARWHAL",
+          "HECK",
+          "CHEESECAKE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "25": {
+    "gameData": {
+      "gameId": 25,
+      "groups": [
+        {
+          "theme": "EUROPEAN COUNTRIES",
+          "words": [
+            "POLAND",
+            "GREECE",
+            "PORTUGAL",
+            "DENMARK"
+          ]
+        },
+        {
+          "theme": "SYNONYMS FOR IMITATE",
+          "words": [
+            "PARROT",
+            "MIMIC",
+            "ECHO",
+            "COPY"
+          ]
+        },
+        {
+          "theme": "TOMS",
+          "words": [
+            "PETTY",
+            "CRUISE",
+            "HOLLAND",
+            "WAITS"
+          ]
+        },
+        {
+          "theme": "WORDS SPELLED WITH ROMAN NUMERALS",
+          "words": [
+            "MIX",
+            "MILD",
+            "LIVID",
+            "DILL"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T21:30:39.016474",
+    "startTimeMillis": 1768509039016,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "MIMIC",
+          "ECHO",
+          "PORTUGAL",
+          "LIVID",
+          "PARROT",
+          "POLAND",
+          "WAITS",
+          "HOLLAND",
+          "MILD",
+          "DILL",
+          "COPY",
+          "PETTY",
+          "CRUISE",
+          "MIX",
+          "DENMARK",
+          "GREECE"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "26": {
+    "gameData": {
+      "gameId": 26,
+      "groups": [
+        {
+          "theme": "HATS",
+          "words": [
+            "BERET",
+            "FEZ",
+            "BOWLER",
+            "FEDORA"
+          ]
+        },
+        {
+          "theme": "ORGANS",
+          "words": [
+            "HEART",
+            "KIDNEY",
+            "LIVER",
+            "LUNG"
+          ]
+        },
+        {
+          "theme": "PARTS OF A BOOK",
+          "words": [
+            "SPINE",
+            "JACKET",
+            "COVER",
+            "PAGE"
+          ]
+        },
+        {
+          "theme": "JACK ___",
+          "words": [
+            "POT",
+            "ASS",
+            "RABBIT",
+            "KNIFE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-15T21:40:39.032159",
+    "startTimeMillis": 1768509639032,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "HEART",
+          "SPINE",
+          "FEZ",
+          "PAGE",
+          "JACKET",
+          "ASS",
+          "KNIFE",
+          "POT",
+          "LIVER",
+          "BERET",
+          "COVER",
+          "FEDORA",
+          "LUNG",
+          "KIDNEY",
+          "RABBIT",
+          "BOWLER"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
+  },
+  "27": {
+    "gameData": {
+      "gameId": 27,
+      "groups": [
+        {
+          "theme": "SEVEN DWARFS",
+          "words": [
+            "DOC",
+            "HAPPY",
+            "GRUMPY",
+            "BASHFUL"
+          ]
+        },
+        {
+          "theme": "FILE EXTENSIONS",
+          "words": [
+            "ZIP",
+            "TIFF",
+            "GIF",
+            "PDF"
+          ]
+        },
+        {
+          "theme": "FLIGHTLESS BIRDS",
+          "words": [
+            "PENGUIN",
+            "KIWI",
+            "EMU",
+            "OSTRICH"
+          ]
+        },
+        {
+          "theme": "TROPICAL FRUITS",
+          "words": [
+            "COCONUT",
+            "BANANA",
+            "MANGO",
+            "PINEAPPLE"
+          ]
+        }
+      ]
+    },
+    "runNumber": 1,
+    "playedAt": "2026-01-16T01:17:07.265475",
+    "startTimeMillis": 1768522627265,
+    "players": {
+      "Super": {
+        "guessedThemes": [],
+        "shuffledWords": [
+          "GRUMPY",
+          "GIF",
+          "PENGUIN",
+          "COCONUT",
+          "PINEAPPLE",
+          "OSTRICH",
+          "HAPPY",
+          "MANGO",
+          "KIWI",
+          "TIFF",
+          "EMU",
+          "BASHFUL",
+          "BANANA",
+          "DOC",
+          "ZIP",
+          "PDF"
+        ],
+        "errors": 0,
+        "finished": true,
+        "won": false
+      }
+    }
   }
 }

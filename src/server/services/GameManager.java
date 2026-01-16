@@ -55,7 +55,7 @@ public class GameManager {
             nextRun = matchHistory.get(nextGameDef.getGameId()).getRunNumber() + 1;
         }
 
-        // 3. Crea la nuova partita (Tutto lo stato è incapsulato qui!)
+        // 3. Crea la nuova partita (Tutto lo stato è incapsulato)
         this.currentMatch = new GameMatch(nextGameDef, nextRun);
     }
 
